@@ -1,0 +1,71 @@
+nav:
+  profile: 个人资料
+  logout: 退出登录
+
+home:
+  welcome: '{nickname}，欢迎回到平訇网。'
+  notLoggedIn: 您还没有登录，请{login}或{signup}
+  loginLink: 登录
+  signupLink: 注册
+
+login:
+  title: 登录
+  submit: '@:login.title'
+  submitting: 登录中…
+  noAccount: 还没有账户？
+  signupLink: 立即注册
+
+signup:
+  title: 注册
+  submit: '@:signup.title'
+  submitting: 注册中…
+  hasAccount: 已有账户？
+  loginLink: 立即登录
+
+profile:
+  title: 个人资料
+  save: 保存
+  saving: 保存中…
+  saved: 已保存
+
+field:
+  username:
+    label: 用户名
+    placeholder: 请输入用户名
+    required: 用户名不能为空
+    length: 用户名需 {min}-{max} 个字符
+    format: 用户名只能含字母、数字或短横线
+  nickname:
+    label: 昵称
+    placeholder: 请输入昵称
+    required: 昵称不能为空
+    length: 昵称需 {min}-{max} 个字符
+  avatar:
+    label: 头像
+    provider:
+      custom: 自定义
+    placeholder:
+      qq: 请输入 QQ 号
+      gravatar: 请输入邮箱地址
+      custom: 请输入图片 URL
+  password:
+    label: 密码
+    placeholder: 请输入密码
+    required: 密码不能为空
+    minLength: 密码至少 {min} 位
+  confirmPassword:
+    label: 确认密码
+    placeholder: 再次输入密码
+    required: 确认密码不能为空
+    mismatch: 两次输入的密码不一致
+
+error:
+  invalidCredentials: 用户名或密码错误
+  badRequest: 参数错误
+  usernameExists: 用户名已存在
+  unauthorized: 未授权
+  tokenExpired: 令牌无效或已过期
+  userNotFound: 用户不存在
+  loginFailed: 登录失败，请稍后再试
+  signupFailed: 注册失败，请稍后再试
+  networkError: 网络错误，请稍后再试
