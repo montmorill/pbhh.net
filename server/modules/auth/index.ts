@@ -1,4 +1,5 @@
 import { jwt } from '@elysiajs/jwt'
+import { bus } from '@server/events/bus'
 import { Elysia } from 'elysia'
 import { loginBody, signupBody, updateProfileBody } from './model'
 import * as AuthService from './service'
@@ -24,6 +25,7 @@ export const auth = new Elysia()
     const user = await AuthService.create(body)
     if (!user)
       return status(409, { message: 'error.usernameExists' })
+    bus.publish('user.registered', { username: user.username })
     return status(201, { token: await jwt.sign({ sub: user.username }) })
   }, {
     body: signupBody,

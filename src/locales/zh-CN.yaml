@@ -3,12 +3,12 @@ nav:
   logout: 退出登录
 
 home:
-  welcome: '{nickname}，欢迎回到平訇网。'
+  welcome: '{nickname}，欢迎回到平渹网。'
   notLoggedIn: 您还没有登录，请{login}或{signup}
   loginLink: 登录
   signupLink: 注册
   joinGroup: 点击链接加入群聊{group}
-  joinGroupName: 【平訇网工作小组】
+  joinGroupName: 【平渹网工作小组】
 
 login:
   title: 登录
