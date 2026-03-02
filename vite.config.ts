@@ -13,4 +13,19 @@ export default defineConfig({
       '@server': '/server/modules',
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+      },
+    },
+  },
+  preview: {
+    port: 80,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+      },
+    },
+  },
 })

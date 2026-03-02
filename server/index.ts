@@ -2,7 +2,7 @@ import { cors } from '@elysiajs/cors'
 import { Elysia } from 'elysia'
 import { auth } from './modules/auth'
 
-const app = new Elysia()
+const app = new Elysia({ prefix: '/api' })
   .use(cors())
   .use(auth)
   .listen(3000)
