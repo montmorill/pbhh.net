@@ -3,7 +3,7 @@ import { Elysia } from 'elysia'
 import { auth } from './modules/auth'
 
 const app = new Elysia()
-  .use(cors({ origin: 'http://localhost:5173' }))
+  .use(cors())
   .use(auth)
   .listen(3000)
 

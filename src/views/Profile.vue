@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import type { ProviderId } from '@/lib/avatar'
 import { ChevronDown } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import defaultAvatar from '@/assets/default-avatar.svg'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,87 +14,29 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PROVIDERS, useAvatar } from '@/composables/avatar'
 import { api } from '@/lib/api'
-import { PROVIDERS, resolveAvatar } from '@/lib/avatar'
 import { fetchUser, user } from '@/lib/store'
+import { validateNickname } from '@/lib/validators'
 
-const { t } = useI18n()
+const composer = useI18n()
+const { t } = composer
 
-type AvatarOption = ProviderId | 'custom'
+const { avatarProvider, avatarInput, avatarUrl, avatarString } = useAvatar(user.value?.avatar)
 
-const PROVIDER_OPTIONS: { value: AvatarOption, label: string }[] = [
-  ...Object.entries(PROVIDERS).map(([id, p]) => ({ value: id as ProviderId, label: p.label })),
-  { value: 'custom', label: t('field.avatar.provider.custom') },
-]
-
-function parseAvatar(avatar: string | undefined): { provider: AvatarOption, input: string } {
-  if (!avatar)
-    return { provider: 'custom', input: '' }
-  const colonIdx = avatar.indexOf(':')
-  if (colonIdx !== -1) {
-    const maybeProvider = avatar.slice(0, colonIdx)
-    if (maybeProvider in PROVIDERS)
-      return { provider: maybeProvider as ProviderId, input: avatar.slice(colonIdx + 1) }
-  }
-  return { provider: 'custom', input: avatar }
-}
-
-const initial = parseAvatar(user.value?.avatar)
-const avatarProvider = ref<AvatarOption>(initial.provider)
-const avatarInput = ref(initial.input)
-const previewUrl = ref(user.value?.avatar || defaultAvatar)
-
-const currentProviderLabel = computed(
-  () => PROVIDER_OPTIONS.find(p => p.value === avatarProvider.value)?.label,
-)
-
-const avatarInputmode = computed(() => {
-  if (avatarProvider.value === 'custom')
-    return 'url' as const
-  return PROVIDERS[avatarProvider.value].inputmode
-})
-
-function buildAvatarString(): string {
-  if (avatarProvider.value === 'custom')
-    return avatarInput.value
-  return `${avatarProvider.value}:${avatarInput.value}`
-}
-
-async function updatePreview() {
-  const str = buildAvatarString()
-  previewUrl.value = str ? (await resolveAvatar(str) || defaultAvatar) : defaultAvatar
-}
-
-watch([avatarProvider, avatarInput], updatePreview)
+const currentProviderLabel = computed(() => PROVIDERS[avatarProvider.value].label)
 
 const form = ref({ nickname: user.value?.nickname ?? '' })
 const nicknameError = ref('')
 
-function validateNickname() {
-  const v = form.value.nickname
-  if (!v)
-    nicknameError.value = t('field.nickname.required')
-  else if (v.length < 3 || v.length > 20)
-    nicknameError.value = t('field.nickname.length', { min: 3, max: 20 })
-  else
-    nicknameError.value = ''
+function onValidateNickname() {
+  nicknameError.value = validateNickname(composer, form.value.nickname)
 }
 
 async function sync() {
-  await api.me.patch({ nickname: form.value.nickname, avatar: buildAvatarString() })
+  const nickname = nicknameError.value ? user.value!.nickname : form.value.nickname
+  await api.me.patch({ nickname, avatar: avatarString.value })
   await fetchUser()
-}
-
-async function onNicknameBlur() {
-  validateNickname()
-  if (nicknameError.value)
-    return
-  await sync()
-}
-
-async function onAvatarBlur() {
-  await updatePreview()
-  await sync()
 }
 </script>
 
@@ -111,7 +51,7 @@ async function onAvatarBlur() {
         <CardContent class="space-y-4 pt-6 pb-6">
           <div class="flex justify-center mb-2">
             <Avatar class="size-20 border">
-              <AvatarImage :src="previewUrl" :alt="user?.username" />
+              <AvatarImage :src="avatarUrl" :alt="user?.username" />
               <AvatarFallback>{{ user?.nickname?.slice(0, 2) }}</AvatarFallback>
             </Avatar>
           </div>
@@ -135,7 +75,8 @@ async function onAvatarBlur() {
               :placeholder="t('field.nickname.placeholder')"
               spellcheck="false"
               :class="nicknameError ? 'border-destructive' : ''"
-              @blur="onNicknameBlur"
+              @input="onValidateNickname"
+              @blur="sync"
             />
             <p v-if="nicknameError" class="text-xs text-destructive">
               {{ nicknameError }}
@@ -155,21 +96,22 @@ async function onAvatarBlur() {
                 <DropdownMenuContent>
                   <DropdownMenuRadioGroup v-model="avatarProvider">
                     <DropdownMenuRadioItem
-                      v-for="p in PROVIDER_OPTIONS"
-                      :key="p.value"
-                      :value="p.value"
+                      v-for="provider, key in PROVIDERS"
+                      :key="key"
+                      :value="key"
+                      @select="avatarInput = ''"
                     >
-                      {{ p.label }}
+                      {{ provider.label }}
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Input
                 v-model="avatarInput"
-                :inputmode="avatarInputmode"
+                :inputmode="PROVIDERS[avatarProvider].inputmode"
                 :placeholder="t(`field.avatar.placeholder.${avatarProvider}`)"
                 spellcheck="false"
-                @blur="onAvatarBlur"
+                @blur="sync"
               />
             </div>
           </div>

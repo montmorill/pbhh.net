@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import type { UserProfile } from '@server/auth/model'
 import { LogOut, User } from 'lucide-vue-next'
-import { ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import defaultAvatar from '@/assets/default-avatar.svg'
 import {
   Avatar,
   AvatarFallback,
@@ -17,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { resolveAvatar } from '@/lib/avatar'
+import useAvatar from '@/composables/avatar'
 import { clearAuth } from '@/lib/store'
 
 const props = defineProps<UserProfile>()
@@ -25,10 +23,7 @@ const props = defineProps<UserProfile>()
 const { t } = useI18n()
 const router = useRouter()
 
-const avatarUrl = ref(defaultAvatar)
-watchEffect(async () => {
-  avatarUrl.value = (await resolveAvatar(props.avatar)) || defaultAvatar
-})
+const { avatarUrl } = useAvatar(() => props.avatar)
 
 function logout() {
   clearAuth()

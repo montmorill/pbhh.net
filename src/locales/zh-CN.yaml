@@ -7,6 +7,8 @@ home:
   notLoggedIn: 您还没有登录，请{login}或{signup}
   loginLink: 登录
   signupLink: 注册
+  joinGroup: 点击链接加入群聊{group}
+  joinGroupName: 【平訇网工作小组】
 
 login:
   title: 登录
@@ -28,35 +30,31 @@ profile:
   saving: 保存中…
   saved: 已保存
 
+validation:
+  required: 不能为空
+  minLength: '{label}至少 {min} 个字符'
+  maxLength: '{label}最多 {max} 个字符'
+  pattern: 格式不正确
+
 field:
   username:
     label: 用户名
     placeholder: 请输入用户名
-    required: 用户名不能为空
-    length: 用户名需 {min}-{max} 个字符
-    format: 用户名只能含字母、数字或短横线
+    pattern: 用户名只能含字母、数字或短横线
   nickname:
     label: 昵称
     placeholder: 请输入昵称
-    required: 昵称不能为空
-    length: 昵称需 {min}-{max} 个字符
   avatar:
     label: 头像
-    provider:
-      custom: 自定义
     placeholder:
       qq: 请输入 QQ 号
       gravatar: 请输入邮箱地址
-      custom: 请输入图片 URL
   password:
     label: 密码
     placeholder: 请输入密码
-    required: 密码不能为空
-    minLength: 密码至少 {min} 位
   confirmPassword:
     label: 确认密码
     placeholder: 再次输入密码
-    required: 确认密码不能为空
     mismatch: 两次输入的密码不一致
 
 error:

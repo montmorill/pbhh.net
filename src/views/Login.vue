@@ -2,39 +2,29 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import FormField from '@/components/FormField.vue'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useFormFields } from '@/composables/useFormFields'
 import { api } from '@/lib/api'
 import { fetchUser, setToken } from '@/lib/store'
+import { validatePassword, validateUsername } from '@/lib/validators'
 
-const { t, te } = useI18n()
+const composer = useI18n()
+const { t, te } = composer
 const router = useRouter()
 
-const form = ref({ username: '', password: '' })
-const errors = ref({ username: '', password: '' })
+const { fields, filled, hasErrors } = useFormFields({
+  username: { type: 'text', autocomplete: 'username', validate: value => validateUsername(composer, value) },
+  password: { type: 'password', autocomplete: 'current-password', validate: value => validatePassword(composer, value) },
+})
+
 const loading = ref(false)
 const serverError = ref('')
 
-function validate(field: keyof typeof form.value) {
-  const value = form.value[field]
-  if (!value) {
-    errors.value[field] = t(`field.${field}.required`)
-  }
-  else {
-    errors.value[field] = ''
-  }
-}
-
-const allFilled = () => Object.values(form.value).every(Boolean)
-const hasErrors = () => Object.values(errors.value).some(Boolean)
-
 async function handleSubmit() {
-  validate('username')
-  validate('password')
-  if (hasErrors())
+  if (!filled.value || hasErrors.value)
     return
 
   loading.value = true
@@ -42,8 +32,8 @@ async function handleSubmit() {
 
   try {
     const { data, error } = await api.login.post({
-      username: form.value.username,
-      password: form.value.password,
+      username: fields.username.value.value,
+      password: fields.password.value.value,
     })
 
     if (error) {
@@ -74,51 +64,32 @@ async function handleSubmit() {
 
       <Card>
         <form @submit.prevent="handleSubmit">
-          <CardContent class="space-y-4 pt-6">
+          <CardContent class="space-y-2 pt-6">
             <Alert v-if="serverError" variant="destructive">
               <AlertDescription>{{ serverError }}</AlertDescription>
             </Alert>
 
-            <div class="space-y-2">
-              <Label for="username">{{ t('field.username.label') }}</Label>
-              <Input
-                id="username"
-                v-model="form.username"
-                type="text"
-                :placeholder="t('field.username.placeholder')"
-                autocomplete="username"
-                spellcheck="false"
-                :class="errors.username ? 'border-destructive' : ''"
-                @blur="validate('username')"
-              />
-              <p v-if="errors.username" class="text-xs text-destructive">
-                {{ errors.username }}
-              </p>
-            </div>
-
-            <div class="space-y-2">
-              <Label for="password">{{ t('field.password.label') }}</Label>
-              <Input
-                id="password"
-                v-model="form.password"
-                type="password"
-                :placeholder="t('field.password.placeholder')"
-                autocomplete="current-password"
-                :class="errors.password ? 'border-destructive' : ''"
-                @blur="validate('password')"
-              />
-              <p v-if="errors.password" class="text-xs text-destructive">
-                {{ errors.password }}
-              </p>
-            </div>
+            <FormField
+              v-for="(field, key) in fields"
+              :id="key"
+              :key="key"
+              v-model="field.value.value"
+              :type="field.type"
+              :autocomplete="field.autocomplete"
+              :label="t(`field.${key}.label`)"
+              :placeholder="t(`field.${key}.placeholder`)"
+              :error="field.error.value"
+              @blur="field.error.value = field.validate(field.value.value)"
+            />
           </CardContent>
 
-          <CardFooter class="flex-col gap-3">
+          <CardFooter class="flex-col gap-2">
             <Button
               type="submit"
               class="w-full"
-              :disabled="!allFilled() || hasErrors() || loading"
+              :disabled="!filled || hasErrors || loading"
             >
+              <Spinner v-if="loading" data-icon="inline-start" />
               {{ loading ? t('login.submitting') : t('login.submit') }}
             </Button>
             <p class="text-center text-sm text-muted-foreground">

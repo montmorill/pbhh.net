@@ -8,7 +8,7 @@ import './style.css'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', component: () => import('@/views/Index.vue') },
+    { path: '/', component: () => import('@/views/Home.vue') },
     { path: '/login', component: () => import('@/views/Login.vue'), meta: { guestOnly: true } },
     { path: '/signup', component: () => import('@/views/Signup.vue'), meta: { guestOnly: true } },
     { path: '/profile', component: () => import('@/views/Profile.vue'), meta: { authRequired: true } },

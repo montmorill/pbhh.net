@@ -1,78 +1,52 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import FormField from '@/components/FormField.vue'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Spinner } from '@/components/ui/spinner'
+import { useFormFields } from '@/composables/useFormFields'
 import { api } from '@/lib/api'
 import { fetchUser, setToken } from '@/lib/store'
+import { validateNickname, validatePassword, validateUsername } from '@/lib/validators'
 
-const { t, te } = useI18n()
+const composer = useI18n()
+const { t, te } = composer
 const router = useRouter()
 
-const form = ref({ username: '', nickname: '', password: '', confirmPassword: '' })
-const errors = ref({ username: '', nickname: '', password: '', confirmPassword: '' })
+const { fields, filled, hasErrors } = useFormFields({
+  username: { type: 'text', autocomplete: 'username', validate: value => validateUsername(composer, value) },
+  nickname: { type: 'text', autocomplete: 'nickname', validate: value => validateNickname(composer, value) },
+  password: { type: 'password', autocomplete: 'new-password', validate: value => validatePassword(composer, value) },
+  confirmPassword: { type: 'password', autocomplete: 'new-password', validate: validateConfirmPassword },
+})
+
+function validateConfirmPassword(value: string) {
+  if (!value)
+    return t('validation.required')
+  if (value !== fields.password.value.value)
+    return t('field.confirmPassword.mismatch')
+  return ''
+}
+
 const loading = ref(false)
 const serverError = ref('')
 
-const allFilled = computed(() => Object.values(form.value).every(Boolean))
-const hasErrors = computed(() => Object.values(errors.value).some(Boolean))
-
-function validateField(field: keyof typeof form.value) {
-  const value = form.value[field]
-  switch (field) {
-    case 'username':
-      if (!value)
-        errors.value.username = t('field.username.required')
-      else if (value.length < 3 || value.length > 20)
-        errors.value.username = t('field.username.length', { min: 3, max: 20 })
-      else if (!/^[a-z0-9-]+$/i.test(value))
-        errors.value.username = t('field.username.format')
-      else
-        errors.value.username = ''
-      break
-    case 'nickname':
-      if (!value)
-        errors.value.nickname = t('field.nickname.required')
-      else if (value.length < 3 || value.length > 20)
-        errors.value.nickname = t('field.nickname.length', { min: 3, max: 20 })
-      else
-        errors.value.nickname = ''
-      break
-    case 'password':
-      if (!value)
-        errors.value.password = t('field.password.required')
-      else if (value.length < 8)
-        errors.value.password = t('field.password.minLength', { min: 8 })
-      else
-        errors.value.password = ''
-      break
-    case 'confirmPassword':
-      if (!value)
-        errors.value.confirmPassword = t('field.confirmPassword.required')
-      else if (value !== form.value.password)
-        errors.value.confirmPassword = t('field.confirmPassword.mismatch')
-      else
-        errors.value.confirmPassword = ''
-      break
-  }
-}
-
 async function handleSubmit() {
-  for (const field of Object.keys(form.value) as (keyof typeof form.value)[])
-    validateField(field)
-
-  if (hasErrors.value)
+  if (!filled.value || hasErrors.value)
     return
 
   loading.value = true
   serverError.value = ''
 
   try {
-    const { data, error } = await api.signup.post(form.value)
+    const { data, error } = await api.signup.post({
+      username: fields.username.value.value,
+      nickname: fields.nickname.value.value,
+      password: fields.password.value.value,
+    })
 
     if (error) {
       const key = error.value?.message
@@ -91,13 +65,6 @@ async function handleSubmit() {
     loading.value = false
   }
 }
-
-const fields = [
-  { name: 'username' as const, type: 'text', autocomplete: 'username' },
-  { name: 'nickname' as const, type: 'text', autocomplete: 'nickname' },
-  { name: 'password' as const, type: 'password', autocomplete: 'new-password' },
-  { name: 'confirmPassword' as const, type: 'password', autocomplete: 'new-password' },
-]
 </script>
 
 <template>
@@ -109,35 +76,32 @@ const fields = [
 
       <Card>
         <form @submit.prevent="handleSubmit">
-          <CardContent class="space-y-4 pt-6">
+          <CardContent class="space-y-2 pt-6">
             <Alert v-if="serverError" variant="destructive">
               <AlertDescription>{{ serverError }}</AlertDescription>
             </Alert>
 
-            <div v-for="field in fields" :key="field.name" class="space-y-2">
-              <Label :for="field.name">{{ t(`field.${field.name}.label`) }}</Label>
-              <Input
-                :id="field.name"
-                v-model="form[field.name]"
-                :type="field.type"
-                :autocomplete="field.autocomplete"
-                :placeholder="t(`field.${field.name}.placeholder`)"
-                spellcheck="false"
-                :class="errors[field.name] ? 'border-destructive' : ''"
-                @blur="validateField(field.name)"
-              />
-              <p v-if="errors[field.name]" class="text-xs text-destructive">
-                {{ errors[field.name] }}
-              </p>
-            </div>
+            <FormField
+              v-for="(field, key) in fields"
+              :id="key"
+              :key="key"
+              v-model="field.value.value"
+              :type="field.type"
+              :autocomplete="field.autocomplete"
+              :label="t(`field.${key}.label`)"
+              :placeholder="t(`field.${key}.placeholder`)"
+              :error="field.error.value"
+              @input="field.error.value = field.validate(field.value.value)"
+            />
           </CardContent>
 
-          <CardFooter class="flex-col gap-3">
+          <CardFooter class="flex-col gap-2">
             <Button
               type="submit"
               class="w-full"
-              :disabled="!allFilled || hasErrors || loading"
+              :disabled="!filled || hasErrors || loading"
             >
+              <Spinner v-if="loading" data-icon="inline-start" />
               {{ loading ? t('signup.submitting') : t('signup.submit') }}
             </Button>
             <p class="text-center text-sm text-muted-foreground">
