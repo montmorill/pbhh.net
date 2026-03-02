@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "phong",
+      "name": "pbhh.net",
       "dependencies": {
         "@elysiajs/eden": "^1.4.8",
         "@sinclair/typebox": "^0.34.48",

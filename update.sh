@@ -13,7 +13,7 @@ echo "==> Building frontend..."
 bun run build
 
 echo "==> Restarting services..."
-systemctl restart phong-server
-systemctl restart phong-frontend
+systemctl restart pbhh.net-server
+systemctl restart pbhh.net-frontend
 
 echo "==> Done."
