@@ -30,29 +30,27 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <main class="flex justify-center items-center">
-    <div class="w-full max-w-sm px-4">
-      <h1 class="text-3xl font-bold text-center mb-6">
-        {{ title }}
-      </h1>
+  <div class="w-full max-w-sm px-4">
+    <h1 class="text-3xl font-bold text-center mb-6">
+      {{ title }}
+    </h1>
 
-      <Card>
-        <form @submit.prevent="handleSubmit">
-          <CardContent class="space-y-4 pt-6">
-            <Alert v-if="serverError" variant="destructive">
-              <AlertDescription>{{ serverError }}</AlertDescription>
-            </Alert>
+    <Card>
+      <form @submit.prevent="handleSubmit">
+        <CardContent class="space-y-4 pt-6">
+          <Alert v-if="serverError" variant="destructive">
+            <AlertDescription>{{ serverError }}</AlertDescription>
+          </Alert>
 
-            <slot />
-          </CardContent>
+          <slot />
+        </CardContent>
 
-          <CardFooter class="flex-col gap-2">
-            <slot name="submit" :loading="loading" />
+        <CardFooter class="flex-col gap-2">
+          <slot name="submit" :loading="loading" />
 
-            <slot name="footer" />
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
-  </main>
+          <slot name="footer" />
+        </CardFooter>
+      </form>
+    </Card>
+  </div>
 </template>

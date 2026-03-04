@@ -15,6 +15,13 @@
       "when": 1772559083594,
       "tag": "0001_amused_quicksilver",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772612554170,
+      "tag": "0002_mighty_jetstream",
+      "breakpoints": true
     }
   ]
 }

@@ -8,17 +8,18 @@ home:
   joinGroup: 点击链接加入群聊{group}
   joinGroupName: 【平渹网工作小组】
 nav:
-  profile: 个人资料
+  profile: 个人主页
+  settings: 资料设置
   logout: 退出登录
 login:
   title: 登录
-  submit: '@:login.title'
+  submit: 登录
   submitting: 登录中…
   noAccount: 还没有账户？
   signupLink: 立即注册
 signup:
   title: 注册
-  submit: '@:signup.title'
+  submit: '注册'
   submitting: 注册中…
   hasAccount: 已有账户？
   loginLink: 立即登录
@@ -57,6 +58,30 @@ field:
     label: 确认密码
     placeholder: 再次输入密码
     mismatch: 两次输入的密码不一致
+  tibi:
+    title:
+      label: 标题
+      placeholder: 标题（可选）
+    content:
+      label: 内容
+common:
+  cancel: 取消
+  delete: 删除
+tibi:
+  title: 题壁
+  empty: 暂无题壁，成为第一个留壁的人吧
+  loginRequired: "{login}后才能题壁"
+  deleteConfirm: 删除题壁
+  deleteDescription: 此操作不可撤销，题壁将被永久删除。
+  compose:
+    placeholder: 在此留下你的题壁…
+    submit: 题壁
+  errors:
+    postFailed: 发布失败，请稍后再试
+userPage:
+  notFound: 用户不存在
+  nav:
+    tibis: 题壁
 error:
   invalidCredentials: 用户名或密码错误
   badRequest: 参数错误

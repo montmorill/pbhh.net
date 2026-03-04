@@ -14,9 +14,8 @@ const { validate } = defineProps<{
   error?: string
 }>()
 
-const modelValue = defineModel<string>('value')
 const emit = defineEmits<{ 'update:error': [string] }>()
-
+const modelValue = defineModel<string>('value')
 watch(() => modelValue.value, (newValue) => {
   emit('update:error', validate?.(newValue || '') || '')
 })

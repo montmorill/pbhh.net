@@ -45,6 +45,13 @@ export default new Elysia()
       return status(404, { message: 'error.userNotFound' })
     return user
   })
+  .get('/users/:username', ({ params, status }) => {
+    const profile = AuthService.getByUsername(params.username)
+    if (!profile)
+      return status(404, { message: 'error.userNotFound' })
+    const { username, nickname, avatar } = profile
+    return { username, nickname, avatar }
+  })
   .patch('/me', async ({ headers, jwt, status, body }) => {
     const authorization = headers.authorization ?? ''
     if (!authorization.startsWith('Bearer '))

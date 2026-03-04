@@ -11,7 +11,10 @@ const router = createRouter({
     { path: '/', component: () => import('@/views/Home.vue') },
     { path: '/login', component: () => import('@/views/Login.vue'), meta: { guestOnly: true } },
     { path: '/signup', component: () => import('@/views/Signup.vue'), meta: { guestOnly: true } },
-    { path: '/profile', component: () => import('@/views/Profile.vue'), meta: { authRequired: true } },
+    { path: '/settings', component: () => import('@/views/Profile.vue'), meta: { authRequired: true } },
+    { path: '/tibi', component: () => import('@/views/TibiPage.vue') },
+    { path: '/@:username', component: () => import('@/views/UserPage.vue') },
+    { path: '/@:username/tibi', component: () => import('@/views/TibiPage.vue'), props: route => ({ username: route.params.username }) },
   ],
 })
 

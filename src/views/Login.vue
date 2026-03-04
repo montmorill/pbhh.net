@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import Input from '@/components/Input.vue'
 import FormPage from '@/components/FormPage.vue'
+import Input from '@/components/Input.vue'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { useFields } from '@/composables/useFields'

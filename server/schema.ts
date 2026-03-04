@@ -14,3 +14,18 @@ export const userCapabilities = sqliteTable('user_capabilities', {
 }, table => [
   primaryKey({ columns: [table.username, table.capability] }),
 ])
+
+export const tibis = sqliteTable('tibis', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  title: text('title'),
+  content: text('content').notNull(),
+  username: text('username').notNull().references(() => users.username),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+})
+
+export const tibiLikes = sqliteTable('tibi_likes', {
+  tibiId: integer('tibi_id').notNull().references(() => tibis.id),
+  username: text('username').notNull().references(() => users.username),
+}, table => [
+  primaryKey({ columns: [table.tibiId, table.username] }),
+])

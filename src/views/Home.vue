@@ -8,7 +8,7 @@ const { hitokoto, fromLine } = useHitokoto()
 </script>
 
 <template>
-  <main class="flex flex-col items-center justify-center gap-4">
+  <div class="space-y-4">
     <p v-if="user">
       {{ t('home.welcome', user) }}
     </p>
@@ -35,5 +35,5 @@ const { hitokoto, fromLine } = useHitokoto()
       <span class="pr-[2em]">{{ hitokoto.hitokoto }}</span>
       <span class="pl-[2em] self-end">{{ fromLine }}</span>
     </p>
-  </main>
+  </div>
 </template>

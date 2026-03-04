@@ -1,12 +1,11 @@
 import { cors } from '@elysiajs/cors'
 import { Elysia } from 'elysia'
-import auth from './modules/auth'
-import event from './modules/event'
 
 const app = new Elysia({ prefix: '/api' })
   .use(cors())
-  .use(auth)
-  .use(event)
+  .use(import('@server/auth'))
+  .use(import('@server/event'))
+  .use(import('@server/tibi'))
   .listen(3000)
 
 export type App = typeof app

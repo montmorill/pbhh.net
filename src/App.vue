@@ -10,6 +10,8 @@ import { user } from '@/lib/api'
       <NavBrand />
       <NavUser v-if="user" v-bind="user" />
     </header>
-    <RouterView class="grow" />
+    <main class="grow flex flex-col justify-center items-center">
+      <RouterView />
+    </main>
   </div>
 </template>

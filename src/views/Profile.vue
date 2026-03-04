@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ChevronDown } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FormPage from '@/components/FormPage.vue'
 import Input from '@/components/Input.vue'
@@ -13,16 +14,16 @@ import { useValidators } from '@/composables/useValidators'
 import { api, fetchUser, user } from '@/lib/api'
 
 const { t } = useI18n()
-
 const { nickname } = useValidators()
+
 const { fields, hasErrors, isDirty } = useFields({
   username: { type: 'text', autocomplete: 'username', disabled: true, value: user.value?.username },
   nickname: { type: 'text', autocomplete: 'nickname', validate: nickname, value: user.value?.nickname },
 })
 
 const { avatarProvider, avatarValue, avatarUrl, avatarString } = useAvatar(user.value?.avatar)
-const initialAvatarString = avatarString.value
-const avatarDirty = computed(() => avatarString.value !== initialAvatarString)
+const initialAvatarString = ref(avatarString.value)
+const avatarDirty = computed(() => avatarString.value !== initialAvatarString.value)
 const avatarError = computed(() =>
   avatarValue.value && !PROVIDERS[avatarProvider.value].validate(avatarValue.value)
     ? t(`field.avatar.${avatarProvider.value}.pattern`)
@@ -35,15 +36,21 @@ async function handleSubmit(): Promise<string | void> {
     avatar: avatarString.value,
   })
   await fetchUser()
+  fields.nickname.initial = fields.nickname.value.value
+  initialAvatarString.value = avatarString.value
 }
 </script>
 
 <template>
-  <FormPage :title="$t('profile.title')" :submit="handleSubmit">
+  <FormPage
+    v-if="user"
+    :title="t('profile.title')"
+    :submit="handleSubmit"
+  >
     <div class="flex justify-center mb-2">
       <Avatar class="size-20 border">
-        <AvatarImage :src="avatarUrl" :alt="user?.username" />
-        <AvatarFallback>{{ user?.nickname?.slice(0, 2) }}</AvatarFallback>
+        <AvatarImage :src="avatarUrl" :alt="user.username" />
+        <AvatarFallback>{{ user.nickname?.slice(0, 2) }}</AvatarFallback>
       </Avatar>
     </div>
 
@@ -94,7 +101,7 @@ async function handleSubmit(): Promise<string | void> {
       <Button
         type="submit"
         class="w-full"
-        :disabled="!(isDirty || avatarDirty) || hasErrors || avatarError || loading"
+        :disabled="!(isDirty || avatarDirty) || hasErrors || !!avatarError || loading"
       >
         <Spinner v-if="loading" data-icon="inline-start" />
         {{ loading ? $t('profile.saving') : $t('profile.save') }}

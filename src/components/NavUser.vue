@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LogOut, User } from 'lucide-vue-next'
+import { LogOut, Settings, User } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -35,9 +35,15 @@ function logout() {
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="w-40">
       <DropdownMenuItem as-child>
-        <RouterLink to="/profile" class="flex items-center gap-2 cursor-pointer">
+        <RouterLink :to="`/@${username}`" class="flex items-center gap-2 cursor-pointer">
           <User class="size-4" />
           {{ t('nav.profile') }}
+        </RouterLink>
+      </DropdownMenuItem>
+      <DropdownMenuItem as-child>
+        <RouterLink to="/settings" class="flex items-center gap-2 cursor-pointer">
+          <Settings class="size-4" />
+          {{ t('nav.settings') }}
         </RouterLink>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
