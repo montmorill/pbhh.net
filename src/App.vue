@@ -6,7 +6,7 @@ import { user } from '@/lib/api'
 
 <template>
   <div class="flex flex-col min-h-screen">
-    <header class="h-16 px-8 border-b w-full flex justify-between items-center">
+    <header class="h-16 px-8 border-b w-full flex justify-between items-center select-none">
       <NavBrand />
       <NavUser v-if="user" v-bind="user" />
     </header>

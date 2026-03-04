@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import DOMPurify from 'dompurify'
 import { Heart, Trash2 } from 'lucide-vue-next'
-import { marked } from 'marked'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -34,7 +32,7 @@ const router = useRouter()
 const { avatarUrl } = useAvatar(() => props.avatar)
 
 const renderedContent = computed(() =>
-  DOMPurify.sanitize(marked.parse(props.content.replace(/\n/g, '<br>')) as string),
+  props.content.trim().replace(/\n/g, '<br>'),
 )
 
 const timeStr = computed(() => {
@@ -73,7 +71,7 @@ async function confirmDelete() {
 <template>
   <Card>
     <CardContent class="pt-4">
-      <div class="flex items-center gap-2 mb-3">
+      <div class="flex items-center gap-2 mb-3 select-none">
         <RouterLink :to="`/tibi/@${username}`">
           <Avatar class="size-8 border">
             <AvatarImage :src="avatarUrl" :alt="username" />
@@ -88,8 +86,8 @@ async function confirmDelete() {
         </div>
       </div>
       <p v-if="title" class="font-semibold text-sm mb-1">{{ title }}</p>
-      <div class="prose prose-sm max-w-none mb-3 dark:prose-invert" v-html="renderedContent" />
-      <div class="flex items-center justify-end gap-1">
+      <div class="max-w-none" v-html="renderedContent" />
+      <div class="flex flex-row-reverse items-center gap-1 select-none">
         <Button
           variant="ghost"
           size="sm"

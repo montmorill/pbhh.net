@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Translation, useI18n } from 'vue-i18n'
+import { Separator } from '@/components/ui/separator'
 import useHitokoto from '@/composables/hitokoto'
 import { user } from '@/lib/api'
 
@@ -9,10 +10,13 @@ const { hitokoto, fromLine } = useHitokoto()
 
 <template>
   <div class="space-y-4">
-    <p v-if="user">
-      {{ t('home.welcome', user) }}
-    </p>
-    <Translation v-else keypath="home.notLoggedIn" tag="p">
+    <div class="text-center">
+      <RouterLink to="/tibi" class="link">
+        {{ t('nav.tibi') }}
+      </RouterLink>
+    </div>
+    <Separator />
+    <Translation v-if="!user" keypath="home.notLoggedIn" tag="p">
       <template #login>
         <RouterLink to="/login" class="link">
           {{ t('home.loginLink') }}
@@ -31,9 +35,9 @@ const { hitokoto, fromLine } = useHitokoto()
         </a>
       </template>
     </Translation>
-    <p v-if="hitokoto" class="text-muted-foreground italic text-sm flex flex-col">
+    <div v-if="hitokoto" class="text-muted-foreground italic text-sm flex flex-col">
       <span class="pr-[2em]">{{ hitokoto.hitokoto }}</span>
       <span class="pl-[2em] self-end">{{ fromLine }}</span>
-    </p>
+    </div>
   </div>
 </template>

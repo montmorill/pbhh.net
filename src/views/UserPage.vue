@@ -38,7 +38,7 @@ onMounted(async () => {
     </div>
     <div class="text-center">
       <RouterLink :to="`/@${profile.username}/tibi`" class="link">
-        {{ t('userPage.nav.tibis') }}
+        {{ t('nav.tibi') }}
       </RouterLink>
     </div>
   </div>
