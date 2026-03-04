@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { LogOut, Settings, User } from 'lucide-vue-next'
+import { Inbox, LogOut, Settings, User } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import useAvatar from '@/composables/avatar'
-import { clearAuth } from '@/lib/api'
+import { clearAuth, unreadCount } from '@/lib/api'
 
 const props = defineProps<{
   username: string
@@ -38,6 +38,15 @@ function logout() {
         <RouterLink :to="`/@${username}`" class="flex items-center gap-2 cursor-pointer">
           <User class="size-4" />
           {{ t('nav.profile') }}
+        </RouterLink>
+      </DropdownMenuItem>
+      <DropdownMenuItem as-child>
+        <RouterLink to="/inbox" class="flex items-center gap-2 cursor-pointer">
+          <Inbox class="size-4" />
+          {{ t('nav.inbox') }}
+          <span v-if="unreadCount > 0" class="ml-auto text-xs font-medium bg-blue-500 text-white rounded-full px-1.5 py-0.5 leading-none">
+            {{ unreadCount }}
+          </span>
         </RouterLink>
       </DropdownMenuItem>
       <DropdownMenuItem as-child>

@@ -1,6 +1,7 @@
 import { jwt } from '@elysiajs/jwt'
 import { Type as t } from '@sinclair/typebox'
 import { Elysia } from 'elysia'
+import { bus } from '../event/bus'
 import { createTibiBody, replyBody } from './model'
 import * as TibiService from './service'
 
@@ -61,6 +62,7 @@ export default new Elysia()
     const result = TibiService.toggleLike(Number(params.id), payload.sub)
     if (result === null)
       return status(404, { message: 'error.tibiNotFound' })
+    bus.publish('tibi.liked', { tibiId: Number(params.id), actorUsername: payload.sub, liked: result })
     return { liked: result }
   })
   .get('/tibi/:id', async ({ headers, jwt, params, status }) => {
@@ -96,7 +98,8 @@ export default new Elysia()
     const parentExists = TibiService.get(Number(params.id))
     if (!parentExists)
       return status(404, { message: 'error.tibiNotFound' })
-    TibiService.create(payload.sub, body.content, undefined, Number(params.id))
+    const replyId = TibiService.create(payload.sub, body.content, undefined, Number(params.id))
+    bus.publish('tibi.replied', { parentId: Number(params.id), actorUsername: payload.sub, replyId })
     return status(201, {})
   }, {
     body: replyBody,

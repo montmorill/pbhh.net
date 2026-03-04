@@ -6,6 +6,7 @@ const app = new Elysia({ prefix: '/api' })
   .use(import('@server/auth'))
   .use(import('@server/event'))
   .use(import('@server/tibi'))
+  .use(import('@server/notification'))
   .listen(3000)
 
 export type App = typeof app

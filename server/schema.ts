@@ -30,3 +30,14 @@ export const tibiLikes = sqliteTable('tibi_likes', {
 }, table => [
   primaryKey({ columns: [table.tibiId, table.username] }),
 ])
+
+export const notifications = sqliteTable('notifications', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  username: text('username').notNull().references(() => users.username),
+  type: text('type').notNull(), // 'like' | 'reply'
+  actorUsername: text('actor_username').notNull().references(() => users.username),
+  tibiId: integer('tibi_id').notNull(),
+  replyId: integer('reply_id'),
+  read: integer('read', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+})

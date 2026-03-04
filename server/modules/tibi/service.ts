@@ -48,6 +48,7 @@ function toItem(row: Row, likedIds: Set<number>) {
     avatar: row.avatar ?? '',
     createdAt: row.createdAt!.getTime(),
     likeCount: row.likeCount,
+    replyCount: row.replyCount,
     liked: likedIds.has(row.id),
   }
 }
@@ -77,8 +78,9 @@ export function listReplies(parentId: number, viewerUsername?: string) {
   return rows.map(r => toItem(r, likedIds))
 }
 
-export function create(username: string, content: string, title?: string, parentId?: number) {
-  db.insert(tibis).values({ username, title: title || null, content, parentId: parentId ?? null }).run()
+export function create(username: string, content: string, title?: string, parentId?: number): number {
+  const result = db.insert(tibis).values({ username, title: title || null, content, parentId: parentId ?? null }).returning({ id: tibis.id }).get()
+  return result!.id
 }
 
 export function remove(id: number, username: string): 'ok' | 'not_found' | 'forbidden' {

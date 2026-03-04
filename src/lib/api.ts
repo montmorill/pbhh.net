@@ -11,6 +11,15 @@ export const { api } = treaty<App>(window.location.origin, {
 })
 
 export const user = ref<UserProfile | null>(null)
+export const unreadCount = ref(0)
+
+export async function fetchUnreadCount() {
+  if (!user.value)
+    return
+  const { data } = await api.notifications.unread.get()
+  if (data)
+    unreadCount.value = data.count
+}
 
 export function setToken(token: string) {
   localStorage.setItem('token', token)
