@@ -14,7 +14,24 @@ onMounted(() => {
 })
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-const tab = ref<'backend' | 'frontend' | 'database' | 'events'>('backend')
+type Tab = 'backend' | 'frontend' | 'events' | 'database'
+const TABS: Tab[] = ['backend', 'frontend', 'events', 'database']
+
+function getTabFromHash(): Tab {
+  const hash = location.hash.slice(1) as Tab
+  return TABS.includes(hash) ? hash : 'backend'
+}
+
+const tab = ref<Tab>(getTabFromHash())
+
+function setTab(t: Tab) {
+  tab.value = t
+  history.replaceState(null, '', `#${t}`)
+}
+
+window.addEventListener('hashchange', () => {
+  tab.value = getTabFromHash()
+})
 
 // ── Backend logs (WebSocket) ──────────────────────────────────────────────────
 interface LogEntry { level: string, message: string, ts: number }
@@ -63,10 +80,16 @@ function connectWS() {
 // ── Frontend logs (console intercept) ────────────────────────────────────────
 const frontendLogs = ref<LogEntry[]>([])
 const frontendLogEl = ref<HTMLElement | null>(null)
-let savedConsole = { log: console.log, warn: console.warn, error: console.error }
+const savedConsole = {
+  trace: console.trace,
+  debug: console.debug,
+  log: console.log,
+  info: console.info,
+  warn: console.warn,
+  error: console.error,
+}
 
 function captureConsole() {
-  savedConsole = { log: console.log, warn: console.warn, error: console.error }
   const wrap = (level: string, orig: (...a: unknown[]) => void) =>
     (...args: unknown[]) => {
       orig(...args)
@@ -77,7 +100,10 @@ function captureConsole() {
       if (autoScroll.value && tab.value === 'frontend')
         nextTick(() => frontendLogEl.value?.scrollTo(0, frontendLogEl.value.scrollHeight))
     }
+  console.trace = wrap('trace', savedConsole.trace)
+  console.debug = wrap('debug', savedConsole.debug)
   console.log = wrap('log', savedConsole.log)
+  console.info = wrap('info', savedConsole.info)
   console.warn = wrap('warn', savedConsole.warn)
   console.error = wrap('error', savedConsole.error)
 }
@@ -128,7 +154,10 @@ onUnmounted(() => {
   ws?.close()
   if (reconnectTimer)
     clearTimeout(reconnectTimer)
+  console.trace = savedConsole.trace
+  console.debug = savedConsole.debug
   console.log = savedConsole.log
+  console.info = savedConsole.info
   console.warn = savedConsole.warn
   console.error = savedConsole.error
 })
@@ -170,7 +199,7 @@ function cellValue(v: unknown) {
           :key="key"
           :variant="tab === key ? 'default' : 'ghost'"
           size="sm"
-          @click="tab = key as typeof tab"
+          @click="setTab(key as Tab)"
         >
           {{ label }}
         </Button>

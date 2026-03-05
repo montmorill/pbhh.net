@@ -1,7 +1,7 @@
 import { t } from 'elysia'
 
 export const subscribeBody = t.Object({
-  url: t.String({ minLength: 1 }),
+  url: t.String({ minLength: 1, pattern: '^https?://' }),
   topics: t.Optional(t.Array(t.String({ minLength: 1 }))),
 })
 
