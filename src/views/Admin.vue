@@ -233,7 +233,7 @@ function cellValue(v: unknown) {
 </script>
 
 <template>
-  <div class="w-full flex flex-col h-screen">
+  <div class="w-full flex flex-col h-[calc(100vh-4em)]">
     <!-- Header -->
     <div class="border-b px-4 py-3 flex items-center gap-4 shrink-0">
       <span class="font-bold">Admin</span>
@@ -367,7 +367,7 @@ function cellValue(v: unknown) {
       </div>
       <div class="flex-1 overflow-auto">
         <table class="text-xs w-full border-collapse">
-          <thead class="sticky top-0 bg-background border-b">
+          <thead class="sticky top-0 bg-background shadow-[0_1px_0_0_var(--border)]">
             <tr>
               <th
                 v-for="col in tableColumns"
