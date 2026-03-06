@@ -89,30 +89,10 @@ function handleReplyClick() {
 </script>
 
 <template>
-  <article
-    class="px-4 py-3 border rounded-xl bg-card transition-colors"
-    :class="{ 'hover:bg-muted/40 cursor-pointer': !expanded }"
-    @click="!expanded && router.push(`/post/${id}`)"
-  >
-    <div class="flex items-center gap-2 min-w-0" @click.stop>
-      <component :is="disableUserLink ? 'span' : RouterLink" :to="`/@${username}`" class="shrink-0">
-        <UserAvatar :username="username" :nickname="nickname" :avatar="avatar" size="size-7" />
-      </component>
-      <component
-        :is="disableUserLink ? 'span' : RouterLink"
-        :to="`/@${username}`"
-        class="font-bold text-sm shrink-0"
-        :class="{ 'hover:underline': !disableUserLink }"
-      >
-        {{ nickname }}
-      </component>
-      <span class="text-sm text-muted-foreground truncate">@{{ username }}</span>
-      <span class="text-muted-foreground text-sm shrink-0">· {{ timeStr(createdAt) }}</span>
-    </div>
-
+  <div>
     <div
       v-if="parentId && parentNickname"
-      class="mt-2 px-3 py-2 border rounded-lg text-sm text-muted-foreground cursor-pointer hover:bg-muted/50 transition-colors truncate"
+      class="px-3 py-2 border rounded-lg text-sm text-muted-foreground cursor-pointer hover:bg-muted/50 transition-colors truncate"
       @click.stop="router.push(`/post/${parentId}`)"
     >
       <Translation v-if="parentContent" keypath="post.quote" tag="span">
@@ -123,6 +103,27 @@ function handleReplyClick() {
       </Translation>
       <span v-else class="font-medium text-foreground">{{ parentNickname }}</span>
     </div>
+    <div v-if="parentId && parentNickname" class="ml-5 w-0.5 h-3 bg-border" />
+    <article
+      class="px-4 py-3 border rounded-xl bg-card transition-colors"
+      :class="{ 'hover:bg-muted/40 cursor-pointer': !expanded }"
+      @click="!expanded && router.push(`/post/${id}`)"
+    >
+      <div class="flex items-center gap-2 min-w-0" @click.stop>
+        <component :is="disableUserLink ? 'span' : RouterLink" :to="`/@${username}`" class="shrink-0">
+          <UserAvatar :username="username" :nickname="nickname" :avatar="avatar" size="size-7" />
+        </component>
+        <component
+          :is="disableUserLink ? 'span' : RouterLink"
+          :to="`/@${username}`"
+          class="font-bold text-sm shrink-0"
+          :class="{ 'hover:underline': !disableUserLink }"
+        >
+          {{ nickname }}
+        </component>
+        <span class="text-sm text-muted-foreground truncate">@{{ username }}</span>
+        <span class="text-muted-foreground text-sm shrink-0">· {{ timeStr(createdAt) }}</span>
+      </div>
 
     <div class="mt-2">
       <p v-if="title" class="font-bold text-sm mb-1">{{ title }}</p>
@@ -171,4 +172,5 @@ function handleReplyClick() {
       </span>
     </div>
   </article>
+  </div>
 </template>

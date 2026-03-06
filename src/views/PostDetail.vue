@@ -151,6 +151,8 @@ watch(() => props.id, load)
             <PostItem
               v-bind="item"
               replyable
+              :parent-nickname="item.parentId === post.id ? undefined : item.parentNickname"
+              :parent-content="item.parentId === post.id ? undefined : item.parentContent"
               @reply="startReply(item.id)"
               @deleted="onReplyDeleted"
             />
