@@ -50,7 +50,7 @@ function logout() {
       <DropdownMenuItem v-if="user?.capabilities.includes('admin')" as-child>
         <RouterLink to="/admin" class="flex items-center gap-2 cursor-pointer">
           <ShieldCheck class="size-4" />
-          {{ $t('nav.admin') }}
+          Admin
         </RouterLink>
       </DropdownMenuItem>
       <DropdownMenuSeparator />

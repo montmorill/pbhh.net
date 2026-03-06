@@ -8,11 +8,10 @@ home:
   welcome: '{nickname}，欢迎回到平渹网。'
   joinGroupName: 【平渹网工作小组】
 nav:
-  profile: 个人主页
+  profile: 主页
   inbox: 收件箱
-  admin: 管理后台
   settings: 设置
-  logout: 退出登录
+  logout: 登出
   post: 题壁
 login:
   title: 登录
