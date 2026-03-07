@@ -1,20 +1,10 @@
 import type { MaybeRefOrGetter } from 'vue'
 import { computedAsync } from '@vueuse/core'
 import DOMPurify from 'dompurify'
+import hljs from 'highlight.js'
 import githubDarkCss from 'highlight.js/styles/github-dark.min.css?inline'
 import { marked } from 'marked'
 import { toValue } from 'vue'
-
-declare global {
-  interface Window {
-    hljs: {
-      getLanguage: (name: string) => unknown
-      highlight: (code: string, opts: { language: string }) => { value: string }
-    }
-  }
-}
-
-const { hljs } = window
 
 const style = document.createElement('style')
 style.textContent = githubDarkCss.replace(/\.hljs/g, '.dark .hljs')
