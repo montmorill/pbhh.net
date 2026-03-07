@@ -143,9 +143,12 @@ export default new Elysia({ prefix: '/events' })
     }
 
     let handler: (event: AppEvent) => void
+    let heartbeat: ReturnType<typeof setInterval>
     const stream = new ReadableStream({
       start(controller) {
-        controller.enqueue(encoder.encode(': keepalive\n\n'))
+        heartbeat = setInterval(() => {
+          controller.enqueue(encoder.encode(': heartbeat\n\n'))
+        }, 10 * 1000)
         handler = (event: AppEvent) => {
           if (topics.some(p => matchesTopic(p, event.topic)))
             controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
@@ -153,6 +156,7 @@ export default new Elysia({ prefix: '/events' })
         bus.on('event', handler)
       },
       cancel() {
+        clearInterval(heartbeat)
         bus.off('event', handler)
       },
     })

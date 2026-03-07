@@ -1,5 +1,6 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { bus } from '@server/events/bus'
 
 export interface LogEntry {
   level: 'trace' | 'debug' | 'log' | 'info' | 'warn' | 'error'
@@ -18,9 +19,7 @@ const logFile = resolve(dataDir, 'server.log')
 if (existsSync(logFile)) {
   try {
     const lines = readFileSync(logFile, 'utf-8').split('\n').filter(Boolean)
-    const entries = lines
-      .map((line) => { try { return JSON.parse(line) as LogEntry } catch { return null } })
-      .filter((e): e is LogEntry => e !== null)
+    const entries = lines.map(line => JSON.parse(line))
     logBuffer.push(...entries.slice(-MAX_LOGS))
   }
   catch {}
@@ -57,3 +56,7 @@ console.log = capture('log', console.log.bind(console))
 console.info = capture('info', console.info.bind(console))
 console.warn = capture('warn', console.warn.bind(console))
 console.error = capture('error', console.error.bind(console))
+
+bus.on('event', (event: { topic: string, payload: unknown }) => {
+  console.info(`[event] ${event.topic}`, event.payload)
+})
