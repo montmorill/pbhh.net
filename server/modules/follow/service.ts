@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, count, eq } from 'drizzle-orm'
 import { db, userFollows } from 'server/db'
 
 export function isFollowing(followerUsername: string, followingUsername: string): boolean {
@@ -31,4 +31,22 @@ export function getFollowers(followingUsername: string): string[] {
     .where(eq(userFollows.followingUsername, followingUsername))
     .all()
     .map(r => r.username)
+}
+
+export function getFollowerCount(followingUsername: string): number {
+  return db
+    .select({ count: count() })
+    .from(userFollows)
+    .where(eq(userFollows.followingUsername, followingUsername))
+    .get()
+    ?.count || 0
+}
+
+export function getFollowingCount(followerUsername: string): number {
+  return db
+    .select({ count: count() })
+    .from(userFollows)
+    .where(eq(userFollows.followerUsername, followerUsername))
+    .get()
+    ?.count || 0
 }

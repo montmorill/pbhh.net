@@ -13,7 +13,14 @@ const { t } = useI18n()
 
 const pageUsername = computed(() => route.params.username as string)
 
-interface PublicProfile { username: string, nickname: string, avatar: string, isFollowing: boolean }
+interface PublicProfile {
+  username: string
+  nickname: string
+  avatar: string
+  isFollowing: boolean
+  followerCount: number
+  followingCount: number
+}
 const profile = ref<PublicProfile | null>(null)
 const notFound = ref(false)
 const following = ref(false)
@@ -41,8 +48,12 @@ async function toggleFollow() {
     return
   followLoading.value = true
   const { data } = await api.users({ username: profile.value.username }).follow.post()
-  if (data)
+  if (data) {
     following.value = data.following
+    profile.value.followerCount = data.following
+      ? profile.value.followerCount + 1
+      : profile.value.followerCount - 1
+  }
   followLoading.value = false
 }
 
@@ -60,6 +71,10 @@ watch(pageUsername, load)
       <div>
         <p class="text-xl font-bold">{{ profile.nickname }}</p>
         <p class="text-sm text-muted-foreground">@{{ profile.username }}</p>
+        <div class="flex justify-center space-x-4 mt-2">
+          <span class="text-sm">{{ profile.followingCount }} {{ $t('userPage.following') }}</span>
+          <span class="text-sm">{{ profile.followerCount }} {{ $t('userPage.followers') }}</span>
+        </div>
       </div>
       <Button
         v-if="user && !isSelf"

@@ -38,7 +38,9 @@ export default new Elysia()
       return status(404, { message: 'error.userNotFound' })
     const { username, nickname, avatar } = profile
     const isFollowing = viewerUsername ? FollowService.isFollowing(viewerUsername, username) : false
-    return { username, nickname, avatar, isFollowing }
+    const followerCount = FollowService.getFollowerCount(username)
+    const followingCount = FollowService.getFollowingCount(username)
+    return { username, nickname, avatar, isFollowing, followerCount, followingCount }
   })
   .use(requireAuth)
   .get('/me', ({ username, status }) => {
