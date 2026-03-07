@@ -13,7 +13,7 @@ const { d } = useI18n()
 
 export interface LogEntry { level: string, message: string, timestamp: number }
 
-const logEl = ref<HTMLElement | null>(null)
+const logEl = ref<{ viewport: HTMLElement | null } | null>(null)
 
 const LEVEL_CLASS: Record<string, string> = {
   error: 'text-red-400',
@@ -30,7 +30,7 @@ function levelClass(level: string) {
 
 watch(() => props.logs.length, () => {
   if (props.autoScroll)
-    nextTick(() => logEl.value?.scrollTo(0, logEl.value.scrollHeight))
+    nextTick(() => logEl.value?.viewport?.scrollTo(0, logEl.value.viewport!.scrollHeight))
 })
 </script>
 

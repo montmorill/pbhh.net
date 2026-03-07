@@ -131,55 +131,27 @@ function resolveAvatarUrl(avatar: string): string {
 }
 
 function actorLabel(item: DisplayItem): string {
-  if (item.actors.length === 1)
-    return item.actors[0]!.nickname
-  return t('inbox.likeActors', {
-    name: item.actors[0].nickname,
-    count: item.actors.length - 1,
-  })
-}
-
-function markItemRead(item: DisplayItem) {
-  if (!item.unreadIds.length)
-    return
-  unreadCount.value = Math.max(0, unreadCount.value - item.unreadIds.length)
-  for (const id of item.unreadIds)
-    api.notifications({ id }).read.post()
-  item.unreadIds = []
-  item.read = true
+  const shown = item.actors.slice(0, 3)
+  const names = shown.map(a => a.nickname).join(t('inbox.likeActorsSep'))
+  if (item.actors.length <= shown.length)
+    return names
+  return t('inbox.likeActors', { name: names, count: unreadCount.value })
 }
 
 function navigate(item: DisplayItem) {
-  markItemRead(item)
   router.push(item.type === 'reply' && item.replyId
     ? `/post/${item.replyId}`
     : `/post/${item.postId}`)
 }
 
-// Auto-mark as read when scrolled into view
-const elementItemMap = new WeakMap<Element, DisplayItem>()
-const observed = new WeakSet<Element>()
-
-const intersectionObserver = new IntersectionObserver((entries) => {
-  for (const entry of entries) {
-    if (entry.isIntersecting) {
-      const item = elementItemMap.get(entry.target)
-      if (item)
-        markItemRead(item)
-      intersectionObserver.unobserve(entry.target)
-    }
+// Auto-mark all as read when leaving the page
+onUnmounted(() => {
+  const hasUnread = displayItems.value.some(item => item.unreadIds.length > 0)
+  if (hasUnread) {
+    api.notifications.read.post()
+    unreadCount.value = 0
   }
-}, { threshold: 0 })
-
-onUnmounted(() => intersectionObserver.disconnect())
-
-function registerItem(el: Element | null, item: DisplayItem) {
-  if (el && !observed.has(el)) {
-    observed.add(el)
-    elementItemMap.set(el, item)
-    intersectionObserver.observe(el)
-  }
-}
+})
 </script>
 
 <template>
@@ -212,15 +184,20 @@ function registerItem(el: Element | null, item: DisplayItem) {
       <div
         v-for="item in displayItems"
         :key="item.ids[0]"
-        :ref="el => registerItem(el as Element | null, item)"
         class="flex items-start gap-3 p-3 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
         :class="{ 'opacity-60': item.read }"
         @click="navigate(item)"
       >
-        <Avatar class="size-8 border shrink-0">
-          <AvatarImage :src="resolveAvatarUrl(item.actors[0].avatar)" :alt="item.actors[0].username" />
-          <AvatarFallback>{{ item.actors[0].nickname.slice(0, 2) }}</AvatarFallback>
-        </Avatar>
+        <div class="flex shrink-0 -space-x-2">
+          <Avatar
+            v-for="actor in item.actors.slice(0, 3)"
+            :key="actor.username"
+            class="size-8 border-2 border-background shrink-0"
+          >
+            <AvatarImage :src="resolveAvatarUrl(actor.avatar)" :alt="actor.username" />
+            <AvatarFallback>{{ actor.nickname.slice(0, 2) }}</AvatarFallback>
+          </Avatar>
+        </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="text-sm font-medium">{{ actorLabel(item) }}</span>

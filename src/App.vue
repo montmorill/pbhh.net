@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import NavBrand from '@/components/NavBrand.vue'
 import NavUser from '@/components/NavUser.vue'
@@ -34,13 +34,12 @@ router.beforeEach((_, from) => {
     scrollPositions.set(from.path, el.scrollTop)
 })
 
-router.afterEach((to) => {
+router.afterEach(async (to) => {
   const saved = scrollPositions.get(to.path)
-  requestAnimationFrame(() => {
-    const el = scrollAreaRef.value?.viewport
-    if (el)
-      el.scrollTop = saved ?? 0
-  })
+  await nextTick()
+  const el = scrollAreaRef.value?.viewport
+  if (el)
+    el.scrollTop = saved ?? 0
 })
 </script>
 
