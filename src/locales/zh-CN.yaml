@@ -128,7 +128,7 @@ inbox:
   empty: 暂无通知
   like: 赞了你的题壁
   likeActorsSep: '、'
-  likeActors: '{name} 等 {count} 人'
+  likeActors: ' 等 {count} 人'
   reply: 回复了你的题壁
   post: 发布了新题壁
 userPage:

@@ -130,14 +130,6 @@ function resolveAvatarUrl(avatar: string): string {
   return ''
 }
 
-function actorLabel(item: DisplayItem): string {
-  const shown = item.actors.slice(0, 3)
-  const names = shown.map(a => a.nickname).join(t('inbox.likeActorsSep'))
-  if (item.actors.length <= shown.length)
-    return names
-  return t('inbox.likeActors', { name: names, count: unreadCount.value })
-}
-
 function navigate(item: DisplayItem) {
   router.push(item.type === 'reply' && item.replyId
     ? `/post/${item.replyId}`
@@ -188,7 +180,7 @@ onUnmounted(() => {
         :class="{ 'opacity-60': item.read }"
         @click="navigate(item)"
       >
-        <div class="flex shrink-0 -space-x-2">
+        <div class="flex shrink-0 -space-x-4">
           <Avatar
             v-for="actor in item.actors.slice(0, 3)"
             :key="actor.username"
@@ -200,7 +192,19 @@ onUnmounted(() => {
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="text-sm font-medium">{{ actorLabel(item) }}</span>
+            <span class="text-sm font-medium">
+              <template v-for="(actor, i) in item.actors.slice(0, 3)" :key="actor.username">
+                {{ actor.nickname }}
+                <span
+                  v-if="i < item.actors.slice(0, 3).length - 1"
+                  class="text-muted-foreground font-normal"
+                >{{ t('inbox.likeActorsSep') }}</span>
+              </template>
+              <span
+                v-if="item.actors.length > 3"
+                class="text-muted-foreground font-normal"
+              >{{ t('inbox.likeActors', { count: item.actors.length }) }}</span>
+            </span>
             <span class="text-sm text-muted-foreground">{{ t(`inbox.${item.type}`) }}</span>
             <span v-if="!item.read" class="size-1.5 rounded-full bg-blue-500 shrink-0" />
           </div>
