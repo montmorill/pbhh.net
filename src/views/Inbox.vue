@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { parseAvatar, PROVIDERS } from '@/composables/avatar'
+import { parseAvatar, PROVIDERS } from '@/composables/useAvatar'
 import useTimeStr from '@/composables/useTimeStr'
 import { api, unreadCount } from '@/lib/api'
 

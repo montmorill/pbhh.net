@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import useAvatar from '@/composables/avatar'
+import useAvatar from '@/composables/useAvatar'
 
 const props = defineProps<{
   username: string

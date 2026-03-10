@@ -1,11 +1,20 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Translation, useI18n } from 'vue-i18n'
 import { Separator } from '@/components/ui/separator'
-import useHitokoto from '@/composables/hitokoto'
+import useHitokoto from '@/composables/useHitokoto'
 import { user } from '@/lib/api'
 
 const { t } = useI18n()
-const { hitokoto, fromLine } = useHitokoto()
+const { hitokoto } = useHitokoto()
+const fromLine = computed(() => {
+  if (hitokoto.value) {
+    return hitokoto.value.fromWho
+      ? `——${hitokoto.value.fromWho}「${hitokoto.value.from}」`
+      : `——「${hitokoto.value.from}」`
+  }
+  return ''
+})
 </script>
 
 <template>
@@ -39,7 +48,7 @@ const { hitokoto, fromLine } = useHitokoto()
       </template>
     </Translation>
     <div v-if="hitokoto" class="text-muted-foreground italic text-sm flex flex-col">
-      <span class="pr-[2em]">{{ hitokoto.hitokoto }}</span>
+      <span class="pr-[2em]">{{ hitokoto.content }}</span>
       <span class="pl-[2em] self-end">{{ fromLine }}</span>
     </div>
   </div>

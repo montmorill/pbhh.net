@@ -5,7 +5,7 @@ import { useRoute } from 'vue-router'
 import PostList from '@/components/PostList.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { useAvatar } from '@/composables/avatar'
+import { useAvatar } from '@/composables/useAvatar'
 import { useScrollRestore } from '@/composables/useScrollRestore'
 import { api, user } from '@/lib/api'
 
