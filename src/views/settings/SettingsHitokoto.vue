@@ -24,7 +24,7 @@ const { state: users } = useAsyncState<string[]>(
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div class="grid grid-cols-3 gap-2">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <button
             v-for="type in REMOTE_TYPES"
             :key="type"
@@ -43,7 +43,7 @@ const { state: users } = useAsyncState<string[]>(
         <CardTitle class="text-base">{{ t('settings.hitokoto.local') }}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div class="grid grid-cols-3 gap-2">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <button
             v-for="user in users"
             :key="user"

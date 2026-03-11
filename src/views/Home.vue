@@ -33,7 +33,7 @@ const { hitokoto } = useHitokoto()
     </Translation>
     <Translation keypath="home.joinGroup" tag="p">
       <template #group>
-        <a href="https://qm.qq.com/q/DNU3nJxnwY" target="_blank" class="link">
+        <a href="https://qm.qq.com/q/DNU3nJxnwY" target="_blank" class="link whitespace-nowrap">
           {{ t('home.joinGroupName') }}
         </a>
       </template>

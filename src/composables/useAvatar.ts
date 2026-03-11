@@ -24,7 +24,6 @@ export const PROVIDERS = {
       || (value.includes('@') && value.includes('.')),
     resolve: (value: string) => gravatar.url(value, {
       cdn: '//gravatar.loli.net',
-      s: '640',
       d: '404',
     }),
     type: 'email',

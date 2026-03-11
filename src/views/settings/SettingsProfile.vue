@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChevronDown } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Input from '@/components/Input.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -28,6 +28,9 @@ const avatarError = computed(() =>
     ? t(`field.avatar.${avatarProvider.value}.pattern`)
     : '',
 )
+watch(avatarProvider, () => {
+  avatarValue.value = ''
+})
 
 const profileSaving = ref(false)
 const profileSaved = ref(false)

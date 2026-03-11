@@ -32,7 +32,7 @@ watch(theme, (mode) => {
     <p class="text-sm text-muted-foreground">
       {{ t('settings.themeHint') }}
     </p>
-    <div class="grid grid-cols-3 gap-3">
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
       <button
         v-for="mode in (['light', 'dark', 'system'] as const)"
         :key="mode"
