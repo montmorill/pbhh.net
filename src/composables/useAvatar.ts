@@ -1,7 +1,8 @@
 import type { HTMLAttributes, InputAutoCompleteAttribute, InputTypeHTMLAttribute, MaybeRefOrGetter } from 'vue'
 import gravatar from 'gravatar'
 import { computed, ref, toValue, watchEffect } from 'vue'
-import defaultAvatar from '@/assets/default-avatar.svg'
+
+const DEFAULT_AVATAR = '/default-avatar.svg'
 
 export interface AvatarProvider {
   validate: (value: string) => boolean
@@ -59,7 +60,7 @@ export function useAvatar(avatar: MaybeRefOrGetter<string | undefined>) {
   const initial = parseAvatar(toValue(avatar))
   const avatarProvider = ref<AvatarProviderId>(initial.provider)
   const avatarValue = ref(initial.value)
-  const avatarUrl = ref(defaultAvatar)
+  const avatarUrl = ref(DEFAULT_AVATAR)
 
   watchEffect(() => {
     const { provider, value } = parseAvatar(toValue(avatar))
@@ -68,7 +69,7 @@ export function useAvatar(avatar: MaybeRefOrGetter<string | undefined>) {
   })
 
   watchEffect(() => {
-    avatarUrl.value = PROVIDERS[avatarProvider.value].resolve(avatarValue.value) || defaultAvatar
+    avatarUrl.value = PROVIDERS[avatarProvider.value].resolve(avatarValue.value) || DEFAULT_AVATAR
   })
 
   const avatarString = computed(() => `${avatarProvider.value}:${avatarValue.value}`)
