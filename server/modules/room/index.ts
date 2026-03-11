@@ -199,9 +199,13 @@ export default new Elysia({ prefix: '/rooms' })
 
       if (clientMsg.type === 'game_invite_response') {
         const invite = RoomService.roomPendingInvites.get(roomId)
-        if (invite && invite.invitedPlayers.includes(client.username)) {
+        if (invite && invite.invitedPlayers.includes(client.username) && !invite.responses.has(client.username)) {
           invite.responses.set(client.username, clientMsg.accepted)
-          if (invite.invitedPlayers.every(p => invite.responses.has(p)))
+          const total = invite.invitedPlayers.length
+          const yes = [...invite.responses.values()].filter(Boolean).length
+          const no = invite.responses.size - yes
+          const half = Math.ceil(total / 2)
+          if (yes >= half || no >= half || invite.invitedPlayers.every(p => invite.responses.has(p)))
             finalizeInvite(roomId)
         }
         return
@@ -211,7 +215,11 @@ export default new Elysia({ prefix: '/rooms' })
         const vote = RoomService.roomVotes.get(roomId)
         if (vote && vote.voters.includes(client.username) && !vote.responses.has(client.username)) {
           vote.responses.set(client.username, clientMsg.valid)
-          if (vote.voters.every(v => vote.responses.has(v)))
+          const total = vote.voters.length
+          const yes = [...vote.responses.values()].filter(Boolean).length
+          const no = vote.responses.size - yes
+          const half = Math.ceil(total / 2)
+          if (yes >= half || no >= half || vote.voters.every(v => vote.responses.has(v)))
             vote.finalize()
         }
         return

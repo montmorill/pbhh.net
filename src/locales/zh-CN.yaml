@@ -201,7 +201,9 @@ room:
       inviteBanner: '{host} 邀请你参加飞花令「{keyword}」'
       waitingInvites: 等待其他玩家响应…
       accept: 接受
+      accepted: 已接受，等待其他人…
       decline: 拒绝
+      declined: 已拒绝
       cancelledEvent: 飞花令邀请已取消（参与玩家不足）
       startHint: '输入 !飞花令 <字> 开始游戏，输入 !结束 结束游戏'
       start: '飞花令开始！关键字「{keyword}」，参与者：{players}，先由 {player} 起句'
@@ -219,7 +221,9 @@ room:
       voteEvent: '正在投票：「{content}」是否为真实诗句？'
       voteBanner: '投票：「{content}」是否为真实诗句？（{username} 提交）'
       voteYes: 有效
+      voteYesed: 已投有效，等待其他人…
       voteNo: 无效
+      voteNoed: 已投无效，等待其他人…
       voteValid: '投票通过（{yes} 票有效 / {no} 票无效）'
       voteInvalid: '投票否决（{yes} 票有效 / {no} 票无效）'
 error:

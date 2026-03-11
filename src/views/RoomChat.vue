@@ -80,7 +80,9 @@ const roomName = ref(t('room.unnamed', { id: props.id }))
 const onlineUsers = ref<Map<string, OnlineUser>>(new Map())
 const gameState = ref<GameState | null>(null)
 const pendingInvite = ref<PendingInvite | null>(null)
+const inviteMyResponse = ref<boolean | null>(null)
 const activeVote = ref<{ username: string, content: string, voters: string[], deadline: number } | null>(null)
+const voteMyResponse = ref<boolean | null>(null)
 const voteCountdown = ref(0)
 let voteCountdownInterval: ReturnType<typeof setInterval> | null = null
 const countdown = ref(0)
@@ -172,6 +174,7 @@ const handlers = {
   pong() {},
   game_vote(data) {
     activeVote.value = data
+    voteMyResponse.value = null
     startVoteCountdown(data.deadline)
     entries.value.push({ kind: 'game', data: { event: 'vote', ...data } })
     scrollToBottom()
@@ -184,6 +187,7 @@ const handlers = {
   },
   game_invite(data) {
     pendingInvite.value = data
+    inviteMyResponse.value = null
     startInviteCountdown(data.deadline)
     entries.value.push({ kind: 'game', data: { event: 'invite', ...data } })
     scrollToBottom()
@@ -369,6 +373,7 @@ function gameEventText(entry: GameEvent): string {
 function respondInvite(accepted: boolean) {
   if (!ws || ws.readyState !== WebSocket.OPEN)
     return
+  inviteMyResponse.value = accepted
   ws.send(JSON.stringify({ type: 'game_invite_response', accepted }))
 }
 
@@ -381,6 +386,7 @@ function surrender() {
 function respondVote(valid: boolean) {
   if (!ws || ws.readyState !== WebSocket.OPEN)
     return
+  voteMyResponse.value = valid
   ws.send(JSON.stringify({ type: 'game_vote_response', valid }))
 }
 
@@ -446,12 +452,17 @@ onUnmounted(() => {
             {{ inviteCountdown }}s
           </span>
           <template v-if="pendingInvite.host !== user?.username && pendingInvite.players.includes(user?.username ?? '')">
-            <Button size="sm" class="h-7 text-xs" @click="respondInvite(true)">
-              {{ t('room.game.fhl.accept') }}
-            </Button>
-            <Button size="sm" variant="outline" class="h-7 text-xs" @click="respondInvite(false)">
-              {{ t('room.game.fhl.decline') }}
-            </Button>
+            <template v-if="inviteMyResponse === null">
+              <Button size="sm" class="h-7 text-xs" @click="respondInvite(true)">
+                {{ t('room.game.fhl.accept') }}
+              </Button>
+              <Button size="sm" variant="outline" class="h-7 text-xs" @click="respondInvite(false)">
+                {{ t('room.game.fhl.decline') }}
+              </Button>
+            </template>
+            <span v-else class="text-xs font-medium" :class="inviteMyResponse ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'">
+              {{ inviteMyResponse ? t('room.game.fhl.accepted') : t('room.game.fhl.declined') }}
+            </span>
           </template>
         </div>
       </div>
@@ -468,12 +479,17 @@ onUnmounted(() => {
             {{ voteCountdown }}s
           </span>
           <template v-if="activeVote.voters.includes(user?.username ?? '')">
-            <Button size="sm" class="h-7 text-xs" @click="respondVote(true)">
-              {{ t('room.game.fhl.voteYes') }}
-            </Button>
-            <Button size="sm" variant="outline" class="h-7 text-xs" @click="respondVote(false)">
-              {{ t('room.game.fhl.voteNo') }}
-            </Button>
+            <template v-if="voteMyResponse === null">
+              <Button size="sm" class="h-7 text-xs" @click="respondVote(true)">
+                {{ t('room.game.fhl.voteYes') }}
+              </Button>
+              <Button size="sm" variant="outline" class="h-7 text-xs" @click="respondVote(false)">
+                {{ t('room.game.fhl.voteNo') }}
+              </Button>
+            </template>
+            <span v-else class="text-xs font-medium" :class="voteMyResponse ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'">
+              {{ voteMyResponse ? t('room.game.fhl.voteYesed') : t('room.game.fhl.voteNoed') }}
+            </span>
           </template>
         </div>
       </div>
