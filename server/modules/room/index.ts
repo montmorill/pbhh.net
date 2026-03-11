@@ -20,16 +20,7 @@ export async function validatePoem(content: string): Promise<boolean | null> {
     if (!res.ok)
       return null
     const html = await res.text()
-    console.log(html)
-    const valid = html.includes(`<span style="color:#A32A2A">`)
-    console.log(valid)
-    console.log(valid)
-    console.log(valid)
-    console.log(valid)
-    console.log(valid)
-    console.log(valid)
-    console.log(valid)
-    return valid
+    return html.includes(`<span style="color:#A32A2A">`)
   }
   catch {
     return null
@@ -308,7 +299,9 @@ export default new Elysia({ prefix: '/rooms' })
           // 本地通过后，先用古文岛校验，无法判断时再发起投票
           if (result.valid) {
             const apiResult = await validatePoem(content)
-            const isRealPoem = apiResult === false ? false : await startVote(roomId, client.username, content, game)
+            const isRealPoem = apiResult === null
+              ? await startVote(roomId, client.username, content, game)
+              : apiResult
             if (!isRealPoem) {
               const currentGame = RoomService.roomGames.get(roomId)
               if (!currentGame) {
