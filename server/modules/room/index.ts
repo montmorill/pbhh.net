@@ -231,6 +231,7 @@ export default new Elysia({ prefix: '/rooms' })
         const invite = RoomService.roomPendingInvites.get(roomId)
         if (invite && invite.invitedPlayers.includes(client.username) && !invite.responses.has(client.username)) {
           invite.responses.set(client.username, clientMsg.accepted)
+          RoomService.send(roomId, 'game_invite_progress', { username: client.username, accepted: clientMsg.accepted })
           const total = invite.invitedPlayers.length
           const yes = [...invite.responses.values()].filter(Boolean).length
           const no = invite.responses.size - yes

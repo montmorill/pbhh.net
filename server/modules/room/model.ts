@@ -22,6 +22,7 @@ export interface ServerMessageMap {
   roster: { users: Array<{ username: string, nickname: string, avatar: string }> }
   // 飞花令游戏事件
   game_invite: { keyword: string, host: string, hostNickname: string, players: string[], deadline: number }
+  game_invite_progress: { username: string, accepted: boolean }
   game_invite_cancelled: { reason: 'no_players' }
   game_start: { keyword: string, players: string[], currentPlayer: string, turnDeadline: number, turnTimeoutMs: number }
   game_end: { reason: 'command' | 'winner', winner?: string }

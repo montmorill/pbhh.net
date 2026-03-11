@@ -82,6 +82,7 @@ const onlineUsers = ref<Map<string, OnlineUser>>(new Map())
 const gameState = ref<GameState | null>(null)
 const pendingInvite = ref<PendingInvite | null>(null)
 const inviteMyResponse = ref<boolean | null>(null)
+const inviteResponses = ref<Map<string, boolean>>(new Map())
 const activeVote = ref<{ username: string, content: string, voters: string[], deadline: number } | null>(null)
 const voteMyResponse = ref<boolean | null>(null)
 const voteCountdown = ref(0)
@@ -193,9 +194,13 @@ const handlers = {
   game_invite(data) {
     pendingInvite.value = data
     inviteMyResponse.value = null
+    inviteResponses.value = new Map([[data.host, true]])
     startInviteCountdown(data.deadline)
     entries.value.push({ kind: 'game', data: { event: 'invite', ...data } })
     scrollToBottom()
+  },
+  game_invite_progress(data) {
+    inviteResponses.value = new Map(inviteResponses.value).set(data.username, data.accepted)
   },
   game_invite_cancelled(data) {
     pendingInvite.value = null
@@ -438,6 +443,15 @@ onUnmounted(() => {
           <span v-else>
             {{ t('room.game.fhl.inviteEvent', { host: pendingInvite.hostNickname, keyword: pendingInvite.keyword }) }}
           </span>
+          <div class="flex flex-wrap gap-1.5 mt-1.5">
+            <template v-for="p in pendingInvite.players" :key="p">
+              <span
+                v-if="inviteResponses.get(p) !== false"
+                class="text-xs px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 transition-opacity"
+                :class="inviteResponses.has(p) ? 'opacity-100' : 'opacity-40'"
+              >{{ onlineUsers.get(p)?.nickname ?? p }}</span>
+            </template>
+          </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
           <span class="tabular-nums font-mono text-xs font-semibold" :class="inviteCountdown <= 3 ? 'text-red-500' : 'text-amber-600 dark:text-amber-400'">
