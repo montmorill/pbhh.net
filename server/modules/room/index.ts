@@ -7,6 +7,27 @@ import * as FeiHuaLing from './games/feihualing'
 import { roomNameBody, wsQuery } from './model'
 import * as RoomService from './service'
 
+/**
+ * 校验诗句是否为真实古诗文。
+ * 返回 true=有效，false=无效，null=API 不可用（网络错误或超时）。
+ */
+export async function validatePoem(content: string): Promise<boolean | null> {
+  try {
+    const res = await fetch(
+      `https://www.guwendao.net/search.aspx?value=${encodeURIComponent(content)}`,
+      { signal: AbortSignal.timeout(5_000) },
+    )
+    if (!res.ok)
+      return null
+    const html = await res.text()
+    const textareaTexts = [...html.matchAll(/<textarea[^>]*>([\s\S]*?)<\/textarea>/gi)].map(m => m[1] ?? '')
+    return textareaTexts.some(text => text.includes(content))
+  }
+  catch {
+    return null
+  }
+}
+
 // ── 投票逻辑 ──────────────────────────────────────────────────────────────────
 
 const VOTE_TIMEOUT_MS = 15_000
@@ -267,9 +288,10 @@ export default new Elysia({ prefix: '/rooms' })
         })
 
         if (result.isCurrentPlayer) {
-          // 本地通过后，发起投票校验是否为真实诗句
+          // 本地通过后，先用古文岛校验，无法判断时再发起投票
           if (result.valid) {
-            const isRealPoem = await startVote(roomId, client.username, content, game)
+            const apiResult = await validatePoem(content)
+            const isRealPoem = apiResult === false ? false : await startVote(roomId, client.username, content, game)
             if (!isRealPoem) {
               const currentGame = RoomService.roomGames.get(roomId)
               if (!currentGame) {
