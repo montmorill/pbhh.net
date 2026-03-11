@@ -20,9 +20,7 @@ export async function validatePoem(content: string): Promise<boolean | null> {
     if (!res.ok)
       return null
     const html = await res.text()
-    console.log(html)
-    const textareaTexts = [...html.matchAll(/<textarea[^>]*>([\s\S]*?)<\/textarea>/gi)].map(m => m[1] ?? '')
-    return textareaTexts.some(text => text.includes(content))
+    return html.includes(`<span style="color:#A32A2A">`)
   }
   catch {
     return null
