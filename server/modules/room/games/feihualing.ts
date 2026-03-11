@@ -1,6 +1,6 @@
 /** 飞花令游戏逻辑（纯函数，无副作用） */
 
-/** 淘汰原因：timeout=超时未答, no_keyword=未含关键字, duplicate=诗句重复, invalid_poem=非真实诗句 */
+/** 淘汰原因：timeout=超时未答（淘汰）, invalid_poem=非真实诗句（淘汰）; no_keyword/duplicate 仅跳过回合不淘汰 */
 export type InvalidReason = 'timeout' | 'no_keyword' | 'duplicate' | 'invalid_poem'
 
 export interface FeiHuaLingState {
@@ -72,7 +72,17 @@ export function processMove(
     }
   }
 
-  // 淘汰当前玩家
+  // 缺关键字或重复：仅跳过本轮，不淘汰玩家
+  if (invalidReason === 'no_keyword' || invalidReason === 'duplicate') {
+    const newTurnIndex = (state.turnIndex + 1) % state.activePlayers.length
+    const newState: FeiHuaLingState = { ...state, turnIndex: newTurnIndex }
+    return {
+      result: { isCurrentPlayer: true, valid: false, invalidReason, nextPlayer: currentPlayer(newState), winner: null },
+      newState,
+    }
+  }
+
+  // 超时：淘汰当前玩家
   const newActivePlayers = state.activePlayers.filter(p => p !== username)
   if (newActivePlayers.length <= 1) {
     const winner = newActivePlayers[0] ?? null
@@ -91,23 +101,14 @@ export function processMove(
 }
 
 /**
- * 以指定原因淘汰当前玩家（用于外部异步校验失败时）。
+ * 以指定原因跳过当前回合（不淘汰玩家，仅推进轮次）。
  */
-export function eliminateCurrentPlayer(
+export function skipCurrentTurn(
   state: FeiHuaLingState,
   invalidReason: InvalidReason,
 ): { result: MoveResult, newState: FeiHuaLingState } {
-  const username = currentPlayer(state)
-  const newActivePlayers = state.activePlayers.filter(p => p !== username)
-  if (newActivePlayers.length <= 1) {
-    const winner = newActivePlayers[0] ?? null
-    return {
-      result: { isCurrentPlayer: true, valid: false, invalidReason, nextPlayer: null, winner },
-      newState: { ...state, activePlayers: newActivePlayers, turnIndex: 0 },
-    }
-  }
-  const newTurnIndex = state.turnIndex % newActivePlayers.length
-  const newState: FeiHuaLingState = { ...state, activePlayers: newActivePlayers, turnIndex: newTurnIndex }
+  const newTurnIndex = (state.turnIndex + 1) % state.activePlayers.length
+  const newState: FeiHuaLingState = { ...state, turnIndex: newTurnIndex }
   return {
     result: { isCurrentPlayer: true, valid: false, invalidReason, nextPlayer: currentPlayer(newState), winner: null },
     newState,

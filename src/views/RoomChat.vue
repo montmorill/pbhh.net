@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ServerMessageMap } from 'server/modules/room/model'
-import { ArrowLeft, Flag, Send, Swords, X } from 'lucide-vue-next'
+import { ArrowLeft, Flag, Send, Swords } from 'lucide-vue-next'
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -40,6 +40,7 @@ interface GameEvent {
   winner?: string | null
   reason?: 'command' | 'winner' | 'no_players'
   invalidReason?: 'timeout' | 'no_keyword' | 'duplicate' | 'invalid_poem'
+  eliminated?: boolean
   content?: string
   voters?: string[]
   yesCount?: number
@@ -229,7 +230,8 @@ const handlers = {
   },
   game_invalid(data) {
     if (gameState.value) {
-      gameState.value.activePlayers = gameState.value.activePlayers.filter(p => p !== data.username)
+      if (data.eliminated)
+        gameState.value.activePlayers = gameState.value.activePlayers.filter(p => p !== data.username)
       gameState.value.currentPlayer = data.nextPlayer ?? ''
     }
     if (data.turnDeadline !== null)
@@ -307,12 +309,6 @@ function startGame() {
   ws.send(JSON.stringify({ type: 'game_start_fhl', keyword: kw, players, timeoutMs: timeoutSecs.value * 1000 }))
   keywordDraft.value = ''
   showStartPanel.value = false
-}
-
-function endGame() {
-  if (!ws || ws.readyState !== WebSocket.OPEN)
-    return
-  ws.send(JSON.stringify({ type: 'game_end_fhl' }))
 }
 
 function togglePlayer(username: string) {
@@ -420,16 +416,6 @@ onUnmounted(() => {
       >
         <Swords class="size-4" />
         {{ t('room.game.fhl.btnStart') }}
-      </Button>
-      <Button
-        v-else
-        variant="ghost"
-        size="sm"
-        class="gap-1.5 text-muted-foreground hover:text-destructive"
-        @click="endGame"
-      >
-        <X class="size-4" />
-        {{ t('room.game.fhl.btnEnd') }}
       </Button>
     </div>
 

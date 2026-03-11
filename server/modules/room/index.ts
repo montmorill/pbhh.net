@@ -106,6 +106,7 @@ function onTurnTimeout(roomId: number) {
       winner: result.winner,
       turnDeadline: deadline,
       invalidReason: result.invalidReason,
+      eliminated: true,
     })
   }
 }
@@ -274,7 +275,7 @@ export default new Elysia({ prefix: '/rooms' })
               if (!currentGame) {
                 return
               }
-              ;({ result, newState } = FeiHuaLing.eliminateCurrentPlayer(currentGame, 'invalid_poem'))
+              ;({ result, newState } = FeiHuaLing.skipCurrentTurn(currentGame, 'invalid_poem'))
             }
           }
 
@@ -301,6 +302,7 @@ export default new Elysia({ prefix: '/rooms' })
               winner: result.winner,
               turnDeadline: deadline,
               invalidReason: result.invalidReason,
+              eliminated: false,
             })
           }
         }
