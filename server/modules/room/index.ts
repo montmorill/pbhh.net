@@ -20,7 +20,16 @@ export async function validatePoem(content: string): Promise<boolean | null> {
     if (!res.ok)
       return null
     const html = await res.text()
-    return html.includes(`<span style="color:#A32A2A">`)
+    console.log(html)
+    const valid = html.includes(`<span style="color:#A32A2A">`)
+    console.log(valid)
+    console.log(valid)
+    console.log(valid)
+    console.log(valid)
+    console.log(valid)
+    console.log(valid)
+    console.log(valid)
+    return valid
   }
   catch {
     return null
