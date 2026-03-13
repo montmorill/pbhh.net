@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { UserProfile } from '@server/auth/model'
+import type { UserProfile } from 'server/modules/auth/model'
 import { Inbox, LogOut, Settings, ShieldCheck, User } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'

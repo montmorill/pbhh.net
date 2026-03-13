@@ -7,13 +7,7 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), tailwindcss(), yaml()],
-  resolve: {
-    alias: {
-      '@': '/src',
-      'server': '/server',
-      '@server': '/server/modules',
-    },
-  },
+  resolve: { alias: { '@': '/src' } },
   server: {
     proxy: {
       '/api': {

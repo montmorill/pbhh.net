@@ -1,4 +1,4 @@
-import type { UserProfile } from '@server/auth/model'
+import type { UserProfile } from 'server/modules/auth/model'
 import type { App } from 'server'
 import { treaty } from '@elysiajs/eden'
 import { useStorage } from '@vueuse/core'

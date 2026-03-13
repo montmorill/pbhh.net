@@ -1,6 +1,6 @@
 import type { TString } from '@sinclair/typebox'
 import type { Composer } from 'vue-i18n'
-import { signupBody } from '@server/auth/model'
+import { signupBody } from 'server/modules/auth/model'
 import { useI18n } from 'vue-i18n'
 
 export type FieldValidator = (value: string) => string | undefined

@@ -3,9 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "server/*": ["server/*"],
-      "@server/*": ["server/modules/*"]
+      "@/*": ["src/*"]
     },
     "types": ["vite/client"],
     "strict": true,

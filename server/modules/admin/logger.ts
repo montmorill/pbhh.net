@@ -1,6 +1,6 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { bus } from '@server/events/bus'
+import { bus } from '../events/bus'
 
 export interface LogEntry {
   level: 'trace' | 'debug' | 'log' | 'info' | 'warn' | 'error'

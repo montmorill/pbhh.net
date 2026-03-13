@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createPostBody } from '@server/posts/model'
+import { createPostBody } from 'server/modules/posts/model'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
