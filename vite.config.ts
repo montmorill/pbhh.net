@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import yaml from '@rollup/plugin-yaml'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
@@ -20,15 +21,13 @@ export default defineConfig({
         ws: true,
       },
     },
+    https: {
+      key: readFileSync('/ssl/cert.key'),
+      cert: readFileSync('/ssl/cert.pem'),
+    },
   },
   preview: {
-    port: 80,
-    allowedHosts: ['pbhh.net', 'www.pbhh.net'],
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        ws: true,
-      },
-    },
+    host: '0.0.0.0',
+    port: 443,
   },
 })
