@@ -1,13 +1,16 @@
 import type { TString } from '@sinclair/typebox'
 import type { Composer } from 'vue-i18n'
-import { signupBody } from 'server/modules/auth/model'
+import { nickname, password, username } from 'server/modules/auth/model'
 import { useI18n } from 'vue-i18n'
 
 export type FieldValidator = (value: string) => string | undefined
 
-const { username, nickname, password } = signupBody.properties
-
-export function validateField({ t, te }: Composer, schema: TString, value: string, field?: string): string | undefined {
+export function validateField(
+  { t, te }: Pick<Composer, 't' | 'te'>,
+  schema: TString,
+  value: string,
+  field?: string,
+): string | undefined {
   const label = field ? t(`field.${field}.label`) : ''
   if (!value)
     return t('validation.required', { label })
@@ -21,7 +24,7 @@ export function validateField({ t, te }: Composer, schema: TString, value: strin
   }
 }
 
-export function useValidators(composer: Composer = useI18n()) {
+export function useValidators(composer: Pick<Composer, 't' | 'te'> = useI18n()) {
   return {
     username: value => validateField(composer, username, value, 'username'),
     nickname: value => validateField(composer, nickname, value, 'nickname'),

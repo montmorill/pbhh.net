@@ -1,46 +1,37 @@
-import type { Equal, Expect } from '@/types'
 import { t } from 'elysia'
 
-export const signupBody = t.Object({
-  username: t.String({ minLength: 3, maxLength: 20, pattern: '^\\w+$' }),
-  nickname: t.String({ minLength: 1, maxLength: 20 }),
-  password: t.String({ minLength: 8, maxLength: 20 }),
-})
-export type SignupBody = typeof signupBody.static
-
-export const loginBody = t.Object({
-  username: t.String({ minLength: 1 }),
-  password: t.String({ minLength: 1 }),
-})
-export type LoginBody = typeof loginBody.static
-
-export const updateProfileBody = t.Object({
-  nickname: t.String({ minLength: 1, maxLength: 20 }),
-  avatar: t.String(),
-})
-export type UpdateProfileBody = typeof updateProfileBody.static
-
-export const changePasswordBody = t.Object({
-  currentPassword: t.String({ minLength: 1 }),
-  newPassword: t.String({ minLength: 8 }),
-})
-export type ChangePasswordBody = typeof changePasswordBody.static
-
+export const username = t.String({ minLength: 3, maxLength: 20, pattern: '^\\w+$' })
+export const nickname = t.String({ minLength: 1, maxLength: 20 })
+export const password = t.String({ minLength: 8, maxLength: 20 })
+export const avatar = t.String({ minLength: 1, maxLength: 100 })
 export const capability = t.Union([
   t.Literal('admin'),
 ])
+export const capabilities = t.Array(capability)
+
 export type Capability = typeof capability.static
 
-export const userProfile = t.Object({
-  username: t.String(),
-  nickname: t.String(),
-  avatar: t.String(),
-  capabilities: t.Array(capability),
-})
 export interface UserProfile {
   username: string
   nickname: string
   avatar: string
-  capabilities: Capability[]
 }
-declare const _: Expect<Equal<UserProfile, typeof userProfile.static>>
+
+export const signUpBody = t.Object({
+  username,
+  nickname,
+  password,
+})
+export type SignUpBody = typeof signUpBody.static
+
+export const loginBody = t.Object({
+  username,
+  password,
+})
+export type LoginBody = typeof loginBody.static
+
+export const updateProfileBody = t.Object({
+  nickname,
+  avatar,
+})
+export type UpdateProfileBody = typeof updateProfileBody.static

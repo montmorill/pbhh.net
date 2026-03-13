@@ -1,5 +1,5 @@
-import type { UserProfile } from 'server/modules/auth/model'
 import type { App } from 'server'
+import type { Capability, UserProfile } from 'server/modules/auth/model'
 import { treaty } from '@elysiajs/eden'
 import { useStorage } from '@vueuse/core'
 import { ref } from 'vue'
@@ -7,12 +7,12 @@ import { ref } from 'vue'
 export const TOKEN = useStorage('token', '')
 
 export const { api } = treaty<App>(window.location.origin, {
-  headers() {
-    return TOKEN.value ? { Authorization: `Bearer ${TOKEN.value}` } : {}
-  },
+  headers: () => ({
+    Authorization: TOKEN.value && `Bearer ${TOKEN.value}`,
+  }),
 })
 
-export const user = ref<UserProfile | null>(null)
+export const user = ref<UserProfile & { capabilities: Capability[] }>()
 export const unreadCount = ref(0)
 
 export async function fetchUnreadCount() {
@@ -25,20 +25,18 @@ export async function fetchUnreadCount() {
 
 export function clearAuth() {
   TOKEN.value = ''
-  user.value = null
+  user.value = undefined
 }
 
 export async function fetchUser() {
   if (!TOKEN.value) {
-    user.value = null
-    return
-  }
-
-  const { data, error } = await api.me.get()
-  if (error) {
     clearAuth()
     return
   }
 
-  return user.value = data
+  const { data, error } = await api.me.get()
+  if (error)
+    clearAuth()
+  else
+    return user.value = data
 }

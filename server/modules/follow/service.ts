@@ -30,7 +30,16 @@ export function getFollowers(followingUsername: string): string[] {
     .from(userFollows)
     .where(eq(userFollows.followingUsername, followingUsername))
     .all()
-    .map(r => r.username)
+    .map(row => row.username)
+}
+
+export function getFollowings(followerUsername: string): string[] {
+  return db
+    .select({ username: userFollows.followingUsername })
+    .from(userFollows)
+    .where(eq(userFollows.followerUsername, followerUsername))
+    .all()
+    .map(row => row.username)
 }
 
 export function getFollowerCount(followingUsername: string): number {

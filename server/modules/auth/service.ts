@@ -1,17 +1,16 @@
-import type { Capability, SignupBody, UpdateProfileBody, UserProfile } from './model'
+import type { Capability, SignUpBody, UpdateProfileBody, UserProfile } from './model'
 import bcrypt from 'bcryptjs'
 import { eq } from 'drizzle-orm'
 import { db, userCapabilities, users } from 'server/db'
 
 export async function verify(username: string, password: string) {
   const user = db.select().from(users).where(eq(users.username, username)).get()
-  if (!user)
-    return null
-  const isValid = await bcrypt.compare(password, user.password)
-  return isValid ? user : null
+  if (user && await bcrypt.compare(password, user.password)) {
+    return user
+  }
 }
 
-export async function create({ username, nickname, password }: SignupBody) {
+export async function create({ username, nickname, password }: SignUpBody) {
   const existing = db.select().from(users).where(eq(users.username, username)).get()
   if (existing)
     return null
@@ -23,23 +22,27 @@ export async function create({ username, nickname, password }: SignupBody) {
   return { username }
 }
 
-export function getByUsername(username: string): UserProfile | null {
-  const user = db.select({
+export function getByUsername(username: string): UserProfile | undefined {
+  return db.select({
     username: users.username,
     nickname: users.nickname,
     avatar: users.avatar,
   }).from(users).where(eq(users.username, username)).get()
-  if (!user)
-    return null
-  const capabilities = db.select({ capability: userCapabilities.capability })
-    .from(userCapabilities)
-    .where(eq(userCapabilities.username, username))
-    .all()
-    .map(r => r.capability) as Capability[]
-  return { ...user, capabilities }
 }
 
 export async function update(username: string, data: UpdateProfileBody) {
-  db.update(users).set({ nickname: data.nickname, avatar: data.avatar }).where(eq(users.username, username)).run()
+  db.update(users).set({
+    nickname: data.nickname,
+    avatar: data.avatar,
+  }).where(eq(users.username, username)).run()
   return getByUsername(username)
+}
+
+export function getCapabilities(username: string): Capability[] {
+  return db
+    .select({ capability: userCapabilities.capability })
+    .from(userCapabilities)
+    .where(eq(userCapabilities.username, username))
+    .all()
+    .map(row => row.capability) as Capability[]
 }

@@ -1,9 +1,9 @@
 import { Elysia } from 'elysia'
 import { bus } from '../events/bus'
-import * as FollowService from '../follow/service'
+import { getFollowerCount, getFollowingCount, isFollowing } from '../follow/service'
 import { jwtPlugin } from '../jwt'
 import { optionalAuth, requireAuth } from './guard'
-import { loginBody, signupBody, updateProfileBody } from './model'
+import { loginBody, signUpBody, updateProfileBody } from './model'
 import * as AuthService from './service'
 
 export default new Elysia()
@@ -13,50 +13,35 @@ export default new Elysia()
     if (!user)
       return status(401, { message: 'error.invalidCredentials' })
     return { token: await jwt.sign({ sub: user.username }) }
-  }, {
-    body: loginBody,
-    error({ error, status }) {
-      return status(400, { message: 'error.badRequest', detail: error })
-    },
-  })
+  }, { body: loginBody })
   .post('/signup', async ({ body, status, jwt }) => {
     const user = await AuthService.create(body)
     if (!user)
       return status(409, { message: 'error.usernameExists' })
     bus.publish('user.registered', { username: user.username })
     return status(201, { token: await jwt.sign({ sub: user.username }) })
-  }, {
-    body: signupBody,
-    error({ error, status }) {
-      return status(400, { message: 'error.badRequest', detail: error })
-    },
-  })
+  }, { body: signUpBody })
   .use(optionalAuth)
-  .get('/users/:username', ({ params, status, username: viewerUsername }) => {
+  .get('/users/:username', ({ params, status, username: viewer }) => {
     const profile = AuthService.getByUsername(params.username)
     if (!profile)
       return status(404, { message: 'error.userNotFound' })
-    const { username, nickname, avatar } = profile
-    const isFollowing = viewerUsername ? FollowService.isFollowing(viewerUsername, username) : false
-    const followerCount = FollowService.getFollowerCount(username)
-    const followingCount = FollowService.getFollowingCount(username)
-    return { username, nickname, avatar, isFollowing, followerCount, followingCount }
+    const { username } = profile
+    return {
+      ...profile,
+      followerCount: getFollowerCount(username),
+      followingCount: getFollowingCount(username),
+      isFollowing: !!viewer && isFollowing(viewer, username),
+    }
   })
   .use(requireAuth)
   .get('/me', ({ username, status }) => {
-    const user = AuthService.getByUsername(username)
-    if (!user)
-      return status(404, { message: 'error.userNotFound' })
-    return user
+    const profile = AuthService.getByUsername(username)
+    return profile
+      && { ...profile, capabilities: AuthService.getCapabilities(username) }
+      || status(404, { message: 'error.userNotFound' })
   })
   .patch('/me', async ({ username, status, body }) => {
-    const user = await AuthService.update(username, body)
-    if (!user)
-      return status(404, { message: 'error.userNotFound' })
-    return user
-  }, {
-    body: updateProfileBody,
-    error({ error, status }) {
-      return status(400, { message: 'error.badRequest', detail: error })
-    },
-  })
+    return await AuthService.update(username, body)
+      || status(404, { message: 'error.userNotFound' })
+  }, { body: updateProfileBody })
