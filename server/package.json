@@ -15,10 +15,14 @@
     "@elysiajs/jwt": "^1.4.0",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.1",
-    "elysia": "^1.4.26"
+    "elysia": "^1.4.26",
+    "mailparser": "^3.9.4",
+    "smtp-server": "^3.18.1"
   },
   "devDependencies": {
     "@types/bun": "^1.3.9",
+    "@types/mailparser": "^3.4.6",
+    "@types/smtp-server": "^3.5.12",
     "drizzle-kit": "^0.31.9"
   }
 }

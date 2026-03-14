@@ -1,5 +1,6 @@
 import { cors } from '@elysiajs/cors'
 import { Elysia } from 'elysia'
+import { mailServer } from './modules/mail/server'
 import './modules/admin/logger'
 
 const app = new Elysia({ prefix: '/api' })
@@ -13,8 +14,13 @@ const app = new Elysia({ prefix: '/api' })
   .use(import('./modules/hitokoto'))
   .use(import('./modules/room'))
   .use(import('./modules/admin'))
+  .use(import('./modules/mail'))
   .listen(3000)
 
 export type App = typeof app
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`)
+
+mailServer.listen(25, () => {
+  console.log('[mail] SMTP server listening on port 25')
+})

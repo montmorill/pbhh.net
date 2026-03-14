@@ -84,6 +84,17 @@ export const roomMessages = sqliteTable('room_messages', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 })
 
+export const emails = sqliteTable('emails', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  username: text('username').notNull().references(() => users.username),
+  fromAddress: text('from_address').notNull(),
+  subject: text('subject').notNull().default(''),
+  html: text('html').notNull().default(''),
+  text: text('text').notNull().default(''),
+  read: integer('read', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+})
+
 export const hitokoto = sqliteTable('hitokoto', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   content: text('content').notNull(),
