@@ -10,7 +10,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { PROVIDERS, useAvatar } from '@/composables/useAvatar'
 import { useFields } from '@/composables/useFields'
 import { useValidators } from '@/composables/useValidators'
-import { TOKEN, fetchUser, user } from '@/lib/api'
+import { api, fetchUser, TOKEN, user } from '@/lib/api'
 
 const { t } = useI18n()
 
@@ -37,7 +37,8 @@ const fileInput = ref<HTMLInputElement>()
 
 async function onAvatarFileChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
-  if (!file) return
+  if (!file)
+    return
   avatarUploading.value = true
   const form = new FormData()
   form.append('image', file)

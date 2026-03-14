@@ -1,13 +1,18 @@
 import { eq } from 'drizzle-orm'
 import { db } from '../../db'
 import { gravatarAccounts } from '../../schema'
-import { onEmail, extractUrls } from '../mail/server'
+import { onEmail } from '../mail/server'
 
-const WP_CLIENT_ID = process.env.WP_CLIENT_ID!
-const WP_CLIENT_SECRET = process.env.WP_CLIENT_SECRET!
+function extractUrls(text: string): string[] {
+  const pattern = /https?:\/\/[^\s"'<>)]+/g
+  return [...text.matchAll(pattern)].map(m => m[0])
+}
+
+const WP_CLIENT_ID = Bun.env.WP_CLIENT_ID!
+const WP_CLIENT_SECRET = Bun.env.WP_CLIENT_SECRET!
 
 function generatePassword() {
-  return crypto.randomUUID().replace(/-/g, '') + 'Aa1!'
+  return `${crypto.randomUUID().replace(/-/g, '')}Aa1!`
 }
 
 /** 等待指定邮箱收到邮件并返回邮件正文中第一个匹配的 URL */
@@ -20,7 +25,8 @@ function waitForEmail(
     const timer = setTimeout(() => reject(new Error(`[gravatar] email timeout for ${toAddress}`)), timeoutMs)
 
     onEmail(({ toAddress: to, html, text }) => {
-      if (to !== toAddress) return
+      if (to !== toAddress)
+        return
       const urls = extractUrls(html || text)
       const match = urls.find(u => urlPattern.test(u))
       if (match) {
@@ -64,7 +70,8 @@ async function fetchToken(email: string, password: string) {
       password,
     }),
   })
-  if (!res.ok) throw new Error('[gravatar] token fetch failed')
+  if (!res.ok)
+    throw new Error('[gravatar] token fetch failed')
   const data = await res.json() as { access_token: string, refresh_token: string, expires_in: number }
   return data
 }
@@ -81,15 +88,16 @@ async function refreshAccessToken(refreshToken: string) {
       refresh_token: refreshToken,
     }),
   })
-  if (!res.ok) throw new Error('[gravatar] token refresh failed')
+  if (!res.ok)
+    throw new Error('[gravatar] token refresh failed')
   return res.json() as Promise<{ access_token: string, refresh_token: string, expires_in: number }>
 }
 
 /** 获取有效的 access token（自动续期） */
 async function getValidToken(username: string): Promise<string> {
-  const account = await db.select().from(gravatarAccounts)
-    .where(eq(gravatarAccounts.username, username)).get()
-  if (!account) throw new Error(`[gravatar] no account for ${username}`)
+  const account = await db.select().from(gravatarAccounts).where(eq(gravatarAccounts.username, username)).get()
+  if (!account)
+    throw new Error(`[gravatar] no account for ${username}`)
 
   const now = new Date()
   if (account.accessToken && account.tokenExpiresAt && account.tokenExpiresAt > now) {
