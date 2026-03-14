@@ -1,6 +1,6 @@
 import { and, eq, getTableColumns, is } from 'drizzle-orm'
 import { getTableConfig, SQLiteTable } from 'drizzle-orm/sqlite-core'
-import { db } from 'server/db'
+import { db } from 'server/database'
 import * as schema from 'server/schema'
 
 type Tables = { [K in keyof typeof schema as typeof schema[K] extends SQLiteTable ? K : never]: typeof schema[K] & SQLiteTable }

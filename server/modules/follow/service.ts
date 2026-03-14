@@ -1,5 +1,5 @@
 import { and, count, eq } from 'drizzle-orm'
-import { db, userFollows } from 'server/db'
+import { db, userFollows } from 'server/database'
 
 export function isFollowing(followerUsername: string, followingUsername: string): boolean {
   return !!db

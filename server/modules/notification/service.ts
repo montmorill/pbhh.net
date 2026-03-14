@@ -1,7 +1,7 @@
 import type { AppEvent, AppEventMap } from '../events/bus'
 import { and, count, desc, eq, inArray } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/sqlite-core'
-import { db, notifications, posts, userBindings, users } from 'server/db'
+import { db, notifications, posts, userBindings, users } from 'server/database'
 import { bus } from '../events/bus'
 import * as FollowService from '../follow/service'
 import { isPrefEnabled } from './prefs'

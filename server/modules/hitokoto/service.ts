@@ -1,5 +1,5 @@
 import { eq, sql } from 'drizzle-orm'
-import { db, hitokoto } from 'server/db'
+import { db, hitokoto } from 'server/database'
 
 export function random(username: string) {
   const result = db

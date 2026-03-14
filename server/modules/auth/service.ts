@@ -1,7 +1,7 @@
 import type { Capability, SignUpBody, UpdateProfileBody, UserProfile } from './model'
 import bcrypt from 'bcryptjs'
 import { eq } from 'drizzle-orm'
-import { db, userCapabilities, users } from 'server/db'
+import { db, userCapabilities, users } from 'server/database'
 
 export async function verify(username: string, password: string) {
   const user = db.select().from(users).where(eq(users.username, username)).get()

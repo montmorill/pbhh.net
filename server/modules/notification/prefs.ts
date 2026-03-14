@@ -1,6 +1,6 @@
-import type { NotificationType } from 'server/db'
+import type { NotificationType } from 'server/database'
 import { eq } from 'drizzle-orm'
-import { db, NOTIFICATION_TYPES, notificationPrefs } from 'server/db'
+import { db, NOTIFICATION_TYPES, notificationPrefs } from 'server/database'
 
 export type NotificationPrefs = Record<NotificationType, boolean>
 

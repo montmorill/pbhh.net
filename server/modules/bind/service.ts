@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm'
-import { db, userBindings } from 'server/db'
+import { db, userBindings } from 'server/database'
 
 // In-memory pending codes: code -> { username, expiresAt }
 const pendingCodes = new Map<string, { username: string, expiresAt: number }>()

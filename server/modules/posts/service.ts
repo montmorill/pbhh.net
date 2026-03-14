@@ -1,6 +1,6 @@
 import type { SQL } from 'drizzle-orm'
 import { and, asc, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
-import { db, postLikes, posts, users } from 'server/db'
+import { db, postLikes, posts, users } from 'server/database'
 import { removeForDeletedPosts } from '../notification/service'
 
 function query(where?: SQL, order: 'asc' | 'desc' = 'desc') {
