@@ -15,7 +15,6 @@ const app = new Elysia({ prefix: '/api' })
   .use(import('./modules/room'))
   .use(import('./modules/admin'))
   .use(import('./modules/mail'))
-  .use(import('./modules/gravatar'))
   .listen(3000)
 
 export type App = typeof app
