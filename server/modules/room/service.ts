@@ -194,7 +194,7 @@ export async function listMessages(roomId: number) {
     .from(roomMessages)
     .innerJoin(users, eq(roomMessages.username, users.username))
     .where(eq(roomMessages.roomId, roomId))
-    .orderBy(desc(roomMessages.createdAt))
+    .orderBy(desc(roomMessages.createdAt), desc(roomMessages.id))
     .limit(200)
   return rows.reverse()
 }
