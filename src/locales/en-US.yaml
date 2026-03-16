@@ -2,11 +2,10 @@ brand:
   name: Pinghong
 home:
   joinGroup: Click the link to join the group chat {group}
-  notLoggedIn: You are not logged in yet. Please {login} or {signup}
+  notLoggedIn: Welcome back to Pinghong! You are not logged in yet. Please {login} or {signup}.
   loginLink: Log in
   signupLink: Sign up
   welcome: Welcome back, {nickname}.
-  joinGroupName: '[Pinghong Work Group]'
 nav:
   profile: Profile
   inbox: Inbox
@@ -289,7 +288,8 @@ hanting:
     example: Wrong example
     duplicate: Duplicate entry
     other: Other issue
-    loginRequired: Log in to submit feedback
+    loginRequired: '{login} to submit feedback'
+    loginLink: Log in
     submitted: Submitted
     count: '{count} reported'
   filter:

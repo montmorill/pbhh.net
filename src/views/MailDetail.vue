@@ -104,7 +104,7 @@ watch(() => props.id, load)
           <Mail class="size-5" />
         </div>
         <div class="min-w-0 flex-1 space-y-1">
-          <h1 class="text-xl font-semibold break-words">
+          <h1 class="text-xl font-semibold wrap-break-word">
             {{ mail.subject || t('mail.noSubject') }}
           </h1>
           <p class="text-sm text-muted-foreground break-all">
@@ -151,7 +151,7 @@ watch(() => props.id, load)
 
       <div
         v-if="mail.text"
-        class="prose prose-sm max-w-none break-words dark:prose-invert"
+        class="prose prose-sm max-w-none wrap-break-word dark:prose-invert"
         v-html="renderedText"
       />
       <div v-else-if="safeHtml" class="prose prose-sm max-w-none dark:prose-invert" v-html="safeHtml" />

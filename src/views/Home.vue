@@ -13,16 +13,7 @@ const { hitokoto } = useHitokoto()
     <div v-if="user">
       {{ t('home.welcome', { nickname: user.nickname }) }}
     </div>
-    <div class="space-x-2">
-      <RouterLink to="/post" class="link">
-        {{ t('nav.post') }}
-      </RouterLink>
-      <RouterLink to="/rooms" class="link">
-        {{ t('nav.rooms') }}
-      </RouterLink>
-    </div>
-    <Separator />
-    <Translation v-if="!user" keypath="home.notLoggedIn" tag="p">
+    <Translation v-else keypath="home.notLoggedIn" tag="p">
       <template #login>
         <RouterLink to="/login" class="link">
           {{ t('home.loginLink') }}
@@ -34,6 +25,15 @@ const { hitokoto } = useHitokoto()
         </RouterLink>
       </template>
     </Translation>
+    <div class="space-x-2">
+      <RouterLink to="/post" class="link">
+        {{ t('nav.post') }}
+      </RouterLink>
+      <RouterLink to="/rooms" class="link">
+        {{ t('nav.rooms') }}
+      </RouterLink>
+    </div>
+    <Separator />
     <Translation keypath="home.joinGroup" tag="p">
       <template #group>
         <a href="https://qm.qq.com/q/DNU3nJxnwY" target="_blank" class="link whitespace-nowrap">

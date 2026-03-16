@@ -2,7 +2,7 @@ brand:
   name: 平渹网
 home:
   joinGroup: 点击链接加入群聊{group}
-  notLoggedIn: 您还没有登录，请{login}或{signup}
+  notLoggedIn: 欢迎回到平渹网！您还没有登录，请{login}或{signup}。
   loginLink: 登录
   signupLink: 注册
   welcome: '{nickname}，欢迎回到平渹网。'
@@ -299,7 +299,8 @@ hanting:
     example: 例句错误
     duplicate: 重复词条
     other: 其他问题
-    loginRequired: 登录后才能反馈
+    loginRequired: '{login}后才能反馈'
+    loginLink: 登录
     submitted: 已反馈
     count: '{count} 人反馈'
   flag:

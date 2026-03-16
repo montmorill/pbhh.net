@@ -2,11 +2,10 @@
 import type { FeedbackType } from 'server/modules/hanting/service'
 import { Dices, Eye, EyeOff, Flag, Star } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { Translation, useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Spinner } from '@/components/ui/spinner'
 import { api, user } from '@/lib/api'
 
 interface FeedbackCount {
@@ -281,11 +280,13 @@ onMounted(async () => {
             <span v-if="feedbackCount(type)" class="ml-0.5 opacity-60">{{ feedbackCount(type) }}</span>
           </button>
         </template>
-        <p v-else class="text-xs text-muted-foreground">
-          <RouterLink to="/login" class="link">
-            {{ t('hanting.feedback.loginRequired') }}
-          </RouterLink>
-        </p>
+        <Translation v-else keypath="hanting.feedback.loginRequired" tag="p" class="text-xs text-muted-foreground">
+          <template #login>
+            <RouterLink to="/login" class="link">
+              {{ t('hanting.feedback.loginLink') }}
+            </RouterLink>
+          </template>
+        </Translation>
       </div>
     </div>
 
