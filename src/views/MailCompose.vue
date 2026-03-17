@@ -13,26 +13,29 @@ const { t, te } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
-const recipientUsername = ref(typeof route.query.to === 'string' ? route.query.to : '')
+const recipients = ref(typeof route.query.to === 'string' ? route.query.to : '')
 const subject = ref(typeof route.query.subject === 'string' ? route.query.subject : '')
 const body = ref('')
 const sending = ref(false)
 const errorMessage = ref('')
 const sent = ref(false)
 
-const recipientAddress = computed(() => recipientUsername.value.trim()
-  ? `${recipientUsername.value.trim()}@pbhh.net`
-  : '')
+const normalizedRecipients = computed(() => recipients.value
+  .split(/[;；]/)
+  .map(part => part.trim())
+  .filter(Boolean)
+  .map(part => part.includes('@') ? part : `${part}@pbhh.net`)
+  .join('; '))
 
-const canSubmit = computed(() => !!recipientUsername.value.trim() && !!subject.value.trim() && !!body.value.trim())
+const canSubmit = computed(() => !!recipients.value.trim() && !!subject.value.trim() && !!body.value.trim())
 
-watch([recipientUsername, subject, body], () => {
+watch([recipients, subject, body], () => {
   if (sent.value)
     sent.value = false
 })
 
 async function submit() {
-  if (!recipientUsername.value.trim() || !subject.value.trim() || !body.value.trim())
+  if (!recipients.value.trim() || !subject.value.trim() || !body.value.trim())
     return
 
   sending.value = true
@@ -40,7 +43,7 @@ async function submit() {
   sent.value = false
 
   const { error } = await api.mail.send.post({
-    recipientUsername: recipientUsername.value.trim(),
+    recipients: recipients.value.trim(),
     subject: subject.value.trim(),
     text: body.value.trim(),
   } as never)
@@ -77,13 +80,13 @@ async function submit() {
 
       <Input
         id="mail-recipient"
-        v-model:value="recipientUsername"
-        :label="t('mail.recipientUsername')"
+        v-model:value="recipients"
+        :label="t('mail.recipients')"
         :placeholder="t('mail.recipientPlaceholder')"
       />
 
-      <p v-if="recipientAddress" class="text-xs text-muted-foreground">
-        {{ t('mail.composeAddress', { address: recipientAddress }) }}
+      <p v-if="normalizedRecipients" class="text-xs text-muted-foreground">
+        {{ t('mail.composeAddress', { address: normalizedRecipients }) }}
       </p>
 
       <Input

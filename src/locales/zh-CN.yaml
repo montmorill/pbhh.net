@@ -171,10 +171,10 @@ inbox:
 mail:
   compose: 发邮件
   composeTitle: 写邮件
-  composeDescription: 通过站内邮箱给其他用户发送一封邮件。
+  composeDescription: 请使用英文分号 ; 分隔多个邮箱地址。
   composeAddress: 收件地址：{address}
-  recipientUsername: 收件用户名
-  recipientPlaceholder: 请输入对方用户名
+  recipients: 收件地址
+  recipientPlaceholder: 请输入邮箱地址，多个地址请使用英文分号 ; 分隔
   subject: 主题
   subjectPlaceholder: 请输入邮件主题
   body: 正文
@@ -183,7 +183,7 @@ mail:
   sending: 发送中…
   sent: 邮件已发送
   sentDone: 已发送
-  sentDescription: 邮件已发送成功，对方会在收件箱收到提醒。
+  sentDescription: 邮件已发送成功。
   sendFailed: 发送失败，请稍后再试
   reply: 回信
   delete: 删除邮件
@@ -280,6 +280,11 @@ hanting:
   title: 汉听大词库
   total: 共 {count} 条
   notFound: 未找到词语
+  emptyTitle: 词库还是空的
+  emptyHint: 当前环境还没有导入汉听词条，导入后即可随机出题。
+  emptyFilteredTitle: 当前筛选下没有词条
+  emptyFilteredHint: 换一个筛选条件试试，或者清空筛选重新随机。
+  clearFilters: 清空筛选
   showAnswer: 显示答案
   hideAnswer: 隐藏答案
   random: 随机一题
@@ -335,6 +340,10 @@ hanting:
     Y: 螈汁杯
     Z: 祯休会
 error:
+  invalidEmailAddress: 收件地址格式不正确
+  mailRecipientAmbiguous: 收件人大小写冲突，请精确填写站内邮箱地址
+  mailRelayUnavailable: 当前未配置站外 SMTP 发信能力
+  mailSendExternalFailed: 站外邮件发送失败，请稍后再试
   invalidCredentials: 用户名或密码错误
   badRequest: 参数错误
   usernameExists: 用户名已存在

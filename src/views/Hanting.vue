@@ -3,7 +3,7 @@ import type { FeedbackType } from 'server/modules/hanting/service'
 import { Dices, Eye, EyeOff, Flag, Star } from 'lucide-vue-next'
 import { computed, onMounted, ref, watch } from 'vue'
 import { Translation, useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { api, user } from '@/lib/api'
@@ -28,8 +28,6 @@ interface Word {
 }
 
 const { t, te } = useI18n()
-const route = useRoute()
-const router = useRouter()
 
 const word = ref<Word | null>(null)
 const loading = ref(true)
@@ -43,6 +41,11 @@ const filterQuery = ref<{
   level?: number
   competition?: string
 }>({})
+
+const hasActiveFilters = computed(() => filterQuery.value.flag !== undefined
+  || filterQuery.value.level !== undefined
+  || !!filterQuery.value.competition)
+const isEmpty = computed(() => !loading.value && totalCount.value === 0 && !word.value)
 
 const stars = computed(() => {
   if (!word.value || word.value.level === 0 || word.value.flag === 2)
@@ -70,25 +73,21 @@ function hasFeedback(type: string) {
   return word.value?.userFeedback.includes(type) ?? false
 }
 
-async function loadWord(id: number) {
-  loading.value = true
-  showAnswer.value = false
-  showFeedback.value = false
-  const { data } = await api.hanting({ id }).get()
-  loading.value = false
-  if (data)
-    word.value = data
-  else word.value = null
-}
-
 async function loadRandom() {
   loading.value = true
   showAnswer.value = false
   showFeedback.value = false
+
+  if (totalCount.value === 0) {
+    loading.value = false
+    word.value = null
+    return
+  }
+
   const { data } = await api.hanting.random.get({ query: filterQuery.value })
   if (data) {
-    router.replace(`/hanting/${data.id}`)
-    await loadWord(data.id)
+    word.value = data as unknown as Word
+    loading.value = false
   }
   else {
     loading.value = false
@@ -106,6 +105,24 @@ async function loadCompetitions() {
   const { data } = await api.hanting.competitions.get()
   if (data)
     competitions.value = data
+}
+
+function resetFilters() {
+  filterQuery.value = {}
+}
+
+async function refreshRandomByFilters() {
+  await loadCount()
+
+  if (totalCount.value === 0) {
+    showAnswer.value = false
+    showFeedback.value = false
+    word.value = null
+    loading.value = false
+    return
+  }
+
+  await loadRandom()
 }
 
 async function submitFeedback(type: FeedbackType) {
@@ -131,17 +148,12 @@ async function submitFeedback(type: FeedbackType) {
 }
 
 watch(filterQuery, () => {
-  loadCount()
-  loadRandom()
+  refreshRandomByFilters()
 }, { deep: true })
 
 onMounted(async () => {
   await loadCompetitions()
-  await loadCount()
-  const id = Number(route.params.id)
-  if (id)
-    await loadWord(id)
-  else await loadRandom()
+  await refreshRandomByFilters()
 })
 </script>
 
@@ -215,7 +227,7 @@ onMounted(async () => {
 
       <div class="grow" />
 
-      <Button variant="outline" size="sm" class="gap-1.5" @click="loadRandom">
+      <Button variant="outline" size="sm" class="gap-1.5" :disabled="totalCount === 0" @click="loadRandom">
         <Dices class="size-4" />
         {{ t('hanting.random') }}
       </Button>
@@ -288,6 +300,18 @@ onMounted(async () => {
           </template>
         </Translation>
       </div>
+    </div>
+
+    <div v-else-if="isEmpty" class="rounded-xl border border-dashed bg-card/60 px-6 py-10 text-center space-y-3">
+      <p class="text-base font-medium text-foreground">
+        {{ hasActiveFilters ? t('hanting.emptyFilteredTitle') : t('hanting.emptyTitle') }}
+      </p>
+      <p class="text-sm text-muted-foreground">
+        {{ hasActiveFilters ? t('hanting.emptyFilteredHint') : t('hanting.emptyHint') }}
+      </p>
+      <Button v-if="hasActiveFilters" variant="outline" size="sm" @click="resetFilters">
+        {{ t('hanting.clearFilters') }}
+      </Button>
     </div>
 
     <div v-else class="text-center text-muted-foreground py-8">

@@ -33,7 +33,7 @@ const deleting = ref(false)
 const safeHtml = computed(() => mail.value?.html ? DOMPurify.sanitize(mail.value.html) : '')
 const renderedText = useMarkdown(() => mail.value?.text ?? '')
 const mailDate = computed(() => mail.value ? new Date(mail.value.createdAt) : null)
-const replyUsername = computed(() => mail.value?.fromAddress.split('@')[0] ?? '')
+const replyAddress = computed(() => mail.value?.fromAddress.trim() ?? '')
 const replySubject = computed(() => {
   const value = mail.value?.subject.trim() ?? ''
   if (!value)
@@ -69,13 +69,13 @@ async function deleteMail() {
 }
 
 function replyMail() {
-  if (!replyUsername.value)
+  if (!replyAddress.value)
     return
 
   router.push({
     path: '/mail/compose',
     query: {
-      to: replyUsername.value,
+      to: replyAddress.value,
       subject: replySubject.value,
     },
   })

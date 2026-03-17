@@ -2,28 +2,41 @@ import { and, desc, eq } from 'drizzle-orm'
 import { Elysia, t } from 'elysia'
 import { db, emails, notifications } from 'server/database'
 import { requireAuth } from '../auth/guard'
-import { deliverMailToUser } from './service'
+import { sendMailFromUser } from './service'
 
 export default new Elysia()
   .use(requireAuth)
   .post('/mail/send', async ({ username, body, status }) => {
-    if (body.recipientUsername === username)
-      return status(400, { message: 'error.badRequest' })
-
-    const email = await deliverMailToUser(
-      body.recipientUsername,
-      `${username}@pbhh.net`,
+    const result = await sendMailFromUser(
+      username,
+      body.recipients,
       body.subject.trim(),
       body.text.trim(),
     )
 
-    if (!email)
-      return status(404, { message: 'error.userNotFound' })
+    if (result.status === 'empty-recipients' || result.status === 'invalid-recipient')
+      return status(400, { message: 'error.invalidEmailAddress' })
 
-    return { ok: true, id: email.id }
+    if (result.status === 'ambiguous-recipient')
+      return status(409, { message: 'error.mailRecipientAmbiguous' })
+
+    if (result.status === 'relay-unavailable')
+      return status(503, { message: 'error.mailRelayUnavailable' })
+
+    if (result.status === 'external-send-failed')
+      return status(502, { message: 'error.mailSendExternalFailed' })
+
+    if (result.status !== 'ok')
+      return status(500, { message: 'error.mailSendExternalFailed' })
+
+    return {
+      ok: true,
+      internalCount: result.internalCount,
+      externalCount: result.externalCount,
+    }
   }, {
     body: t.Object({
-      recipientUsername: t.String({ minLength: 3, maxLength: 20 }),
+      recipients: t.String({ minLength: 1, maxLength: 1000 }),
       subject: t.String({ minLength: 1, maxLength: 120 }),
       text: t.String({ minLength: 1, maxLength: 5000 }),
     }),

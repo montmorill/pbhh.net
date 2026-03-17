@@ -97,7 +97,7 @@ watch(pageUsername, load)
           variant="outline"
           size="sm"
           class="rounded-full px-5"
-          @click="router.push({ path: '/mail/compose', query: { to: profile.username } })"
+          @click="router.push({ path: '/mail/compose', query: { to: `${profile.username}@pbhh.net` } })"
         >
           <Mail class="size-4" />
           {{ t('mail.compose') }}
