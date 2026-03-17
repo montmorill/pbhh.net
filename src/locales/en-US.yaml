@@ -295,6 +295,11 @@ hanting:
   title: Hanting Dictionary
   total: '{count} entries'
   notFound: Word not found
+  emptyTitle: The dictionary is still empty
+  emptyHint: No Hanting entries have been imported into this environment yet.
+  emptyFilteredTitle: No entries match the current filters
+  emptyFilteredHint: Try another filter or clear the current filters.
+  clearFilters: Clear filters
   showAnswer: Show Answer
   hideAnswer: Hide Answer
   random: Random

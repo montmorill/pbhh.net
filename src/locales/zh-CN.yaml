@@ -280,6 +280,11 @@ hanting:
   title: 汉听大词库
   total: 共 {count} 条
   notFound: 未找到词语
+  emptyTitle: 词库还是空的
+  emptyHint: 当前环境还没有导入汉听词条，导入后即可随机出题。
+  emptyFilteredTitle: 当前筛选下没有词条
+  emptyFilteredHint: 换一个筛选条件试试，或者清空筛选重新随机。
+  clearFilters: 清空筛选
   showAnswer: 显示答案
   hideAnswer: 隐藏答案
   random: 随机一题
