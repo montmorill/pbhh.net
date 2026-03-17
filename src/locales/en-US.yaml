@@ -176,10 +176,10 @@ inbox:
 mail:
   compose: Send email
   composeTitle: Compose email
-  composeDescription: Send an internal email to another user through the site mailbox.
+  composeDescription: Please use the semicolon ; to separate multiple email addresses.
   composeAddress: 'Recipient: {address}'
-  recipientUsername: Recipient username
-  recipientPlaceholder: Enter the recipient username
+  recipients: Recipients
+  recipientPlaceholder: Enter email addresses separated by semicolons
   subject: Subject
   subjectPlaceholder: Enter the email subject
   body: Message
@@ -188,9 +188,7 @@ mail:
   sending: Sending...
   sent: Email sent
   sentDone: Sent
-  sentDescription: >-
-    The email was sent successfully and the recipient will be notified in their
-    inbox.
+  sentDescription: The email was sent successfully.
   sendFailed: Failed to send email. Please try again later.
   reply: Reply
   delete: Delete email
@@ -325,6 +323,10 @@ hanting:
     competition: Competition
     competitionAll: All
 error:
+  invalidEmailAddress: Invalid recipient email address
+  mailRecipientAmbiguous: Recipient casing is ambiguous. Please use the exact internal email address.
+  mailRelayUnavailable: Outbound SMTP is not configured for external email
+  mailSendExternalFailed: Failed to send the external email. Please try again later.
   invalidCredentials: Incorrect username or password
   badRequest: Invalid request
   usernameExists: Username already exists
