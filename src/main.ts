@@ -36,6 +36,7 @@ const router = createRouter({
       return { wordId: Number(match?.[1]), variant: match?.[2] ? match[2].charCodeAt(0) - 97 : 0 }
     } },
     { path: '/@:username', component: () => import('@/views/UserPage.vue') },
+    { path: '/:pathMatch(.*)*', component: () => import('@/views/NotFound.vue') },
   ],
 })
 

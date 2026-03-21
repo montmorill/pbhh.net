@@ -226,23 +226,24 @@ async function navigate(item: DisplayItem) {
         {{ t('inbox.title') }}
       </h1>
       <Button
-        variant="outline"
-        size="sm"
-        class="ml-auto gap-1.5"
-        @click="router.push('/mail/compose')"
-      >
-        <MailPlus class="size-4" />
-        {{ t('mail.compose') }}
-      </Button>
-      <Button
         v-if="displayItems.length"
         variant="outline"
         size="sm"
+        class="ml-auto"
         :disabled="markingAllRead || !hasUnreadItems"
         @click="markAllRead"
       >
         <Spinner v-if="markingAllRead" data-icon="inline-start" />
         {{ hasUnreadItems ? t('settings.notifications.markAllRead') : t('settings.notifications.markAllReadDone') }}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        class="gap-1.5"
+        @click="router.push('/mail/compose')"
+      >
+        <MailPlus class="size-4" />
+        {{ t('mail.compose') }}
       </Button>
     </div>
 
