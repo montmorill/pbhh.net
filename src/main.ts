@@ -1,10 +1,12 @@
 /* eslint-disable antfu/no-top-level-await */
+import type { Capability } from 'server/modules/auth/model'
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import { i18n } from './i18n'
 import { fetchUnreadCount, fetchUser, user } from './lib/api'
 import { applyTheme, getInitialTheme } from './lib/appearance'
+import { hasCapability } from './lib/capabilities'
 import './style.css'
 
 if ('scrollRestoration' in history)
@@ -19,7 +21,7 @@ const router = createRouter({
     { path: '/login', component: () => import('@/views/Login.vue'), meta: { guestOnly: true } },
     { path: '/signup', component: () => import('@/views/Signup.vue'), meta: { guestOnly: true } },
     { path: '/settings', component: () => import('@/views/Settings.vue'), meta: { authRequired: true } },
-    { path: '/admin', component: () => import('@/views/Admin.vue'), meta: { authRequired: true, adminRequired: true } },
+    { path: '/admin', component: () => import('@/views/Admin.vue'), meta: { authRequired: true, capabilityRequired: 'admin:view' } },
     { path: '/inbox', component: () => import('@/views/Inbox.vue'), meta: { authRequired: true } },
     { path: '/mail/compose', component: () => import('@/views/MailCompose.vue'), meta: { authRequired: true } },
     { path: '/mail/:id', component: () => import('@/views/MailDetail.vue'), props: route => ({ id: Number(route.params.id) }), meta: { authRequired: true } },
@@ -42,7 +44,8 @@ router.beforeEach((to) => {
     return '/'
   if (to.meta.authRequired && !user.value)
     return '/login'
-  if (to.meta.adminRequired && !user.value?.capabilities.includes('admin'))
+  const requiredCapability = to.meta.capabilityRequired as Capability | undefined
+  if (requiredCapability && !hasCapability(user.value?.capabilities, requiredCapability))
     return '/'
 })
 

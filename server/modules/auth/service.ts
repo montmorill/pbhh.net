@@ -2,6 +2,7 @@ import type { Capability, SignUpBody, UpdateProfileBody, UserProfile } from './m
 import bcrypt from 'bcryptjs'
 import { eq } from 'drizzle-orm'
 import { db, userCapabilities, users } from 'server/database'
+import { hasCapability } from './capability'
 
 export async function verify(username: string, password: string) {
   const user = db.select().from(users).where(eq(users.username, username)).get()
@@ -45,4 +46,8 @@ export function getCapabilities(username: string): Capability[] {
     .where(eq(userCapabilities.username, username))
     .all()
     .map(row => row.capability) as Capability[]
+}
+
+export function userHasCapability(username: string, capability: Capability) {
+  return hasCapability(getCapabilities(username), capability)
 }

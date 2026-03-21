@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { clearAuth, unreadCount, user } from '@/lib/api'
+import { hasCapability } from '@/lib/capabilities'
 
 defineProps<UserProfile>()
 
@@ -53,7 +54,7 @@ function logout() {
           {{ $t('nav.settings') }}
         </RouterLink>
       </DropdownMenuItem>
-      <DropdownMenuItem v-if="user?.capabilities.includes('admin')" as-child>
+      <DropdownMenuItem v-if="hasCapability(user?.capabilities, 'admin:view')" as-child>
         <RouterLink to="/admin" class="flex items-center gap-2 cursor-pointer">
           <ShieldCheck class="size-4" />
           管理后台

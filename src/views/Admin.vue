@@ -4,13 +4,16 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { user } from '@/lib/api'
+import { hasCapability } from '@/lib/capabilities'
 import AdminDatabase from './admin/AdminDatabase.vue'
 import AdminLog from './admin/AdminLog.vue'
 
 const router = useRouter()
+const canViewAdmin = computed(() => hasCapability(user.value?.capabilities, 'admin:view'))
+const canEditDatabase = computed(() => hasCapability(user.value?.capabilities, 'admin:edit'))
 
 onMounted(() => {
-  if (!user.value?.capabilities.includes('admin'))
+  if (!canViewAdmin.value)
     router.replace('/')
 })
 
@@ -177,6 +180,6 @@ onUnmounted(() => {
       :auto-scroll="autoScroll && !selectedDate"
       :empty-text="historyLoading ? '加载中…' : '等待日志…'"
     />
-    <AdminDatabase v-show="tab === 'database'" />
+    <AdminDatabase v-show="tab === 'database'" :can-edit="canEditDatabase" />
   </div>
 </template>

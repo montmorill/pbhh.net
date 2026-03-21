@@ -6,6 +6,10 @@ export const password = t.String({ minLength: 8, maxLength: 20 })
 export const avatar = t.String({ minLength: 1, maxLength: 100 })
 export const capability = t.Union([
   t.Literal('admin'),
+  t.Literal('admin:*'),
+  t.Literal('admin:view'),
+  t.Literal('admin:edit'),
+  t.Literal('admin:update'),
 ])
 export const capabilities = t.Array(capability)
 

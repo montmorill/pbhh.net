@@ -1,10 +1,17 @@
+import type { Capability } from '../auth/model'
 import { Elysia } from 'elysia'
 import { requireAuth } from '../auth/guard'
-import { getCapabilities } from '../auth/service'
+import { userHasCapability } from '../auth/service'
 
-export const adminAuth = new Elysia({ name: 'admin-auth' })
-  .use(requireAuth)
-  .onBeforeHandle(({ username, status }) => {
-    if (!getCapabilities(username)?.includes('admin'))
-      return status(403, { message: 'error.forbidden' })
-  })
+function createAdminCapabilityGuard(required: Capability) {
+  return new Elysia({ name: `admin-auth:${required}` })
+    .use(requireAuth)
+    .onBeforeHandle(({ username, status }) => {
+      if (!userHasCapability(username, required))
+        return status(403, { message: 'error.forbidden' })
+    })
+}
+
+export const adminViewAuth = createAdminCapabilityGuard('admin:view')
+export const adminEditAuth = createAdminCapabilityGuard('admin:edit')
+export const adminUpdateAuth = createAdminCapabilityGuard('admin:update')

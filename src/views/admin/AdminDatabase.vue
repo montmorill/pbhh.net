@@ -8,6 +8,10 @@ import { Spinner } from '@/components/ui/spinner'
 
 type Row = Record<string, unknown>
 
+const props = defineProps<{
+  canEdit: boolean
+}>()
+
 const tables = ref<string[]>([])
 const selectedTable = ref('')
 const tableRows = ref<Row[]>([])
@@ -92,6 +96,8 @@ watch(selectedTable, loadTable)
 
 // ── Delete ────────────────────────────────────────────────────────────────────
 async function deleteRow(row: Row) {
+  if (!props.canEdit)
+    return
   if (!tablePks.value.length)
     return
   if (!window.confirm('确认删除这条记录？'))
@@ -109,6 +115,8 @@ async function deleteRow(row: Row) {
 
 // ── Edit ──────────────────────────────────────────────────────────────────────
 function startEdit(localIndex: number) {
+  if (!props.canEdit)
+    return
   const globalIndex = dbPage.value * DB_PAGE_SIZE + localIndex
   editingIndex.value = globalIndex
   editDraft.value = { ...tableRows.value[globalIndex] }
@@ -120,6 +128,8 @@ function cancelEdit() {
 }
 
 async function saveEdit(row: Row) {
+  if (!props.canEdit)
+    return
   const pk: Row = {}
   for (const col of tablePks.value) pk[col] = row[col]
   const values: Row = {}
@@ -140,6 +150,8 @@ async function saveEdit(row: Row) {
 
 // ── Insert ────────────────────────────────────────────────────────────────────
 function startInsert() {
+  if (!props.canEdit)
+    return
   const template: Row = {}
   const cols = tableRows.value[0] ? Object.keys(tableRows.value[0]) : tablePks.value
   for (const col of cols) template[col] = ''
@@ -152,6 +164,8 @@ function cancelInsert() {
 }
 
 async function saveInsert() {
+  if (!props.canEdit || !insertDraft.value)
+    return
   const res = await fetch(`/api/admin/db/${selectedTable.value}`, {
     method: 'POST',
     headers: { ...authHeaders.value, 'Content-Type': 'application/json' },
@@ -210,7 +224,7 @@ onMounted(loadTables)
         <Spinner v-if="loadingTable" data-icon="inline-start" />
         刷新
       </Button>
-      <Button size="sm" variant="outline" @click="startInsert">
+      <Button v-if="canEdit" size="sm" variant="outline" @click="startInsert">
         + 新增
       </Button>
       <span class="text-xs text-muted-foreground">{{ tableRows.length }} 条</span>
@@ -243,7 +257,7 @@ onMounted(loadTables)
                 </button>
               </span>
             </th>
-            <th class="px-3 py-2 text-muted-foreground">
+            <th v-if="canEdit" class="px-3 py-2 text-muted-foreground">
               操作
             </th>
           </tr>
@@ -271,7 +285,7 @@ onMounted(loadTables)
                 class="w-full bg-transparent border border-input rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-ring resize-y min-w-40"
               />
             </td>
-            <td class="px-3 py-1.5 flex gap-3 items-center">
+            <td v-if="canEdit" class="px-3 py-1.5 flex gap-3 items-center">
               <button class="text-xs text-green-600 hover:text-green-800 font-medium" @click="saveInsert">
                 保存
               </button>
@@ -312,7 +326,7 @@ onMounted(loadTables)
                 </template>
                 <span v-else class="px-1 text-muted-foreground">{{ cellValue(row[col]) }}</span>
               </td>
-              <td class="px-3 py-1.5 flex gap-3 items-center">
+              <td v-if="canEdit" class="px-3 py-1.5 flex gap-3 items-center">
                 <button class="text-xs text-green-600 hover:text-green-800 font-medium" @click="saveEdit(row)">
                   保存
                 </button>
@@ -331,7 +345,7 @@ onMounted(loadTables)
                 <span v-if="hiddenCols.has(col)" class="tracking-widest text-muted-foreground">{{ '•'.repeat(12) }}</span>
                 <template v-else>{{ cellValue(row[col]) }}</template>
               </td>
-              <td class="px-3 py-1.5 flex gap-3 items-center">
+              <td v-if="canEdit" class="px-3 py-1.5 flex gap-3 items-center">
                 <button class="text-xs text-blue-500 hover:text-blue-700" @click="startEdit(i)">
                   编辑
                 </button>
