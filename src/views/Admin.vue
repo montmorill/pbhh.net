@@ -142,8 +142,9 @@ onUnmounted(() => {
         <Button
           v-for="(label, key) in TABS"
           :key="key"
-          :variant="tab === key ? 'default' : 'ghost'"
+          :variant="tab === key ? 'default' : 'outline'"
           size="sm"
+          :class="tab === key ? 'border border-primary' : ''"
           @click="setTab(key as Tab)"
         >
           {{ label }}
