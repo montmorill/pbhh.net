@@ -3,7 +3,6 @@ import type { LogEntry } from './admin/AdminLog.vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { user } from '@/lib/api'
 import { hasCapability } from '@/lib/capabilities'
 import AdminDatabase from './admin/AdminDatabase.vue'
@@ -12,14 +11,6 @@ import AdminLog from './admin/AdminLog.vue'
 const router = useRouter()
 const canViewAdmin = computed(() => hasCapability(user.value?.capabilities, 'admin:view'))
 const canEditDatabase = computed(() => hasCapability(user.value?.capabilities, 'admin:edit'))
-const canUpdateApp = computed(() => hasCapability(user.value?.capabilities, 'admin:update'))
-const capabilitySummary = computed(() => [
-  '可进入后台',
-  '可查看日志',
-  '可查看数据库',
-  canEditDatabase.value ? '可编辑数据库' : '只读数据库',
-  canUpdateApp.value ? '预留 update 权限' : '无 update 权限',
-])
 
 onMounted(() => {
   if (!canViewAdmin.value)
@@ -183,27 +174,6 @@ onUnmounted(() => {
           </Button>
         </template>
       </div>
-    </div>
-
-    <div class="shrink-0 border-b bg-muted/20 px-4 py-4">
-      <Card>
-        <CardHeader>
-          <CardTitle class="text-base">
-            当前权限
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="flex flex-wrap gap-2 text-sm">
-            <span
-              v-for="item in capabilitySummary"
-              :key="item"
-              class="rounded-full border bg-muted px-2.5 py-1 text-xs text-foreground"
-            >
-              {{ item }}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
     </div>
 
     <div class="flex-1 overflow-hidden">
