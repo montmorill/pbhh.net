@@ -8,15 +8,24 @@ import { hasCapability } from '@/lib/capabilities'
 import AdminDatabase from './admin/AdminDatabase.vue'
 import AdminLog from './admin/AdminLog.vue'
 
+interface UpdateStatus {
+  running: boolean
+  status: 'idle' | 'running' | 'success' | 'failed'
+  scriptPath: string | null
+  cwd: string
+  pid: number | null
+  startedAt: number | null
+  finishedAt: number | null
+  exitCode: number | null
+  signal: string | null
+  lastOutput: string[]
+  error: string | null
+}
+
 const router = useRouter()
 const canViewAdmin = computed(() => hasCapability(user.value?.capabilities, 'admin:view'))
 const canEditDatabase = computed(() => hasCapability(user.value?.capabilities, 'admin:edit'))
 const canRunUpdate = computed(() => hasCapability(user.value?.capabilities, 'admin:update'))
-
-onMounted(() => {
-  if (!canViewAdmin.value)
-    router.replace('/')
-})
 
 type Tab = keyof typeof TABS
 const TABS = {
@@ -29,34 +38,96 @@ function getTabFromHash(): Tab {
   return Object.keys(TABS).includes(hash) ? hash : 'backend'
 }
 
-const tab = ref<Tab>(getTabFromHash())
+function formatTimestamp(value: number | null) {
+  if (!value)
+    return ''
 
-function setTab(t: Tab) {
-  tab.value = t
-  history.replaceState(history.state, '', `#${t}`)
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(value)
 }
 
-window.addEventListener('hashchange', () => {
-  tab.value = getTabFromHash()
-})
+function getExitSummary(state: UpdateStatus) {
+  if (state.exitCode !== null)
+    return `退出码 ${state.exitCode}`
+  if (state.signal)
+    return `信号 ${state.signal}`
+  return ''
+}
 
+const tab = ref<Tab>(getTabFromHash())
 const LOG_PAGE_SIZE = 500
 const backendLogs = ref<LogEntry[]>([])
 const autoScroll = ref(true)
 const logPage = ref(0)
-
-const authHeaders = computed(() => ({ Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` }))
 const logDates = ref<string[]>([])
 const selectedDate = ref('')
-
 const historyLogs = ref<LogEntry[]>([])
 const historyLoading = ref(false)
-const updateRunning = ref(false)
-const updateStatus = ref('')
+const updateSubmitting = ref(false)
+const updateError = ref('')
+const updateState = ref<UpdateStatus | null>(null)
 
+const authHeaders = computed(() => ({ Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` }))
 const displayLogs = computed(() => selectedDate.value ? historyLogs.value : backendLogs.value)
 const totalLogPages = computed(() => Math.max(1, Math.ceil(displayLogs.value.length / LOG_PAGE_SIZE)))
 const pagedLogs = computed(() => displayLogs.value.slice(logPage.value * LOG_PAGE_SIZE, (logPage.value + 1) * LOG_PAGE_SIZE))
+const isUpdateBusy = computed(() => updateSubmitting.value || updateState.value?.running === true)
+const latestUpdateLine = computed(() => {
+  const lines = updateState.value?.lastOutput
+  return lines?.[lines.length - 1] ?? ''
+})
+
+const updateSummary = computed(() => {
+  const state = updateState.value
+
+  if (state?.running)
+    return `update.sh 执行中${state.startedAt ? ` · ${formatTimestamp(state.startedAt)}` : ''}`
+  if (updateError.value)
+    return updateError.value
+  if (state?.status === 'success')
+    return `update.sh 执行成功${state.finishedAt ? ` · ${formatTimestamp(state.finishedAt)}` : ''}`
+  if (state?.status === 'failed')
+    return `update.sh 执行失败${state.finishedAt ? ` · ${formatTimestamp(state.finishedAt)}` : ''}`
+  return ''
+})
+
+const updateDetail = computed(() => {
+  const state = updateState.value
+  if (!state)
+    return ''
+
+  if (state.running)
+    return latestUpdateLine.value || (state.pid ? `PID ${state.pid}` : '等待日志输出')
+  if (updateError.value)
+    return ''
+  if (state.status === 'failed')
+    return state.error || latestUpdateLine.value || getExitSummary(state)
+  if (state.status === 'success')
+    return latestUpdateLine.value || getExitSummary(state)
+  return ''
+})
+
+function setTab(nextTab: Tab) {
+  tab.value = nextTab
+  history.replaceState(history.state, '', `#${nextTab}`)
+}
+
+function handleHashChange() {
+  tab.value = getTabFromHash()
+}
+
+function applyUpdateState(payload: unknown) {
+  if (!payload || typeof payload !== 'object')
+    return
+
+  updateState.value = payload as UpdateStatus
+}
 
 async function loadLogDates() {
   const res = await fetch('/api/admin/log-dates', { headers: authHeaders.value })
@@ -68,19 +139,35 @@ async function loadHistoryLogs(date: string) {
   historyLoading.value = true
   historyLogs.value = []
   logPage.value = 0
+
   const res = await fetch(`/api/admin/logs/${date}`, { headers: authHeaders.value })
   if (res.ok)
     historyLogs.value = await res.json()
+
   historyLoading.value = false
   logPage.value = totalLogPages.value - 1
 }
 
-async function runUpdate() {
-  if (updateRunning.value)
+async function loadUpdateStatus() {
+  const res = await fetch('/api/admin/update', { headers: authHeaders.value })
+  if (!res.ok)
     return
 
-  updateRunning.value = true
-  updateStatus.value = ''
+  const body = await res.json()
+  applyUpdateState(body)
+  if (body?.status && body.status !== 'idle')
+    updateError.value = ''
+}
+
+async function runUpdate() {
+  if (isUpdateBusy.value)
+    return
+
+  updateSubmitting.value = true
+  updateError.value = ''
+  setTab('backend')
+  selectedDate.value = ''
+  autoScroll.value = true
 
   try {
     const res = await fetch('/api/admin/update', {
@@ -88,19 +175,27 @@ async function runUpdate() {
       headers: authHeaders.value,
     })
     const body = await res.json().catch(() => ({}))
+
     if (!res.ok) {
-      updateStatus.value = body.message === 'error.updateScriptMissing'
+      applyUpdateState(body.update)
+      updateError.value = body.message === 'error.updateScriptMissing'
         ? '未找到 update.sh'
-        : '执行失败'
+        : body.message === 'error.updateAlreadyRunning'
+          ? ''
+          : '执行 update.sh 失败'
+      if (!body.update)
+        await loadUpdateStatus()
       return
     }
-    updateStatus.value = '已开始执行 update.sh'
+
+    applyUpdateState(body.update)
+    await loadUpdateStatus()
   }
   catch {
-    updateStatus.value = '执行失败'
+    updateError.value = '执行 update.sh 失败'
   }
   finally {
-    updateRunning.value = false
+    updateSubmitting.value = false
   }
 }
 
@@ -117,17 +212,47 @@ watch(() => backendLogs.value.length, () => {
     logPage.value = totalLogPages.value - 1
 })
 
-watch(autoScroll, (val) => {
-  if (val && !selectedDate.value)
+watch(autoScroll, (value) => {
+  if (value && !selectedDate.value)
     logPage.value = totalLogPages.value - 1
 })
 
 let ws: WebSocket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+let updatePollTimer: ReturnType<typeof setInterval> | null = null
+let disposed = false
+
+function startUpdatePolling() {
+  if (updatePollTimer)
+    return
+
+  updatePollTimer = setInterval(() => {
+    loadUpdateStatus().catch(() => {})
+  }, 2000)
+}
+
+function stopUpdatePolling() {
+  if (!updatePollTimer)
+    return
+
+  clearInterval(updatePollTimer)
+  updatePollTimer = null
+}
+
+watch(() => updateState.value?.running, async (running, previous) => {
+  if (running)
+    startUpdatePolling()
+  else
+    stopUpdatePolling()
+
+  if (previous && !running)
+    await loadLogDates()
+}, { immediate: true })
 
 function connectWS() {
   const token = localStorage.getItem('token') ?? ''
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+
   ws = new WebSocket(`${protocol}//${location.host}/api/admin/ws?token=${encodeURIComponent(token)}`)
   ws.onmessage = ({ data }) => {
     try {
@@ -141,19 +266,32 @@ function connectWS() {
     catch {}
   }
   ws.onclose = () => {
-    reconnectTimer = setTimeout(connectWS, 3000)
+    if (!disposed)
+      reconnectTimer = setTimeout(connectWS, 3000)
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (!canViewAdmin.value) {
+    router.replace('/')
+    return
+  }
+
+  window.addEventListener('hashchange', handleHashChange)
   connectWS()
-  loadLogDates()
+  await Promise.allSettled([
+    loadLogDates(),
+    loadUpdateStatus(),
+  ])
 })
 
 onUnmounted(() => {
+  disposed = true
+  window.removeEventListener('hashchange', handleHashChange)
   ws?.close()
   if (reconnectTimer)
     clearTimeout(reconnectTimer)
+  stopUpdatePolling()
 })
 </script>
 
@@ -176,14 +314,21 @@ onUnmounted(() => {
           v-if="canRunUpdate"
           variant="outline"
           size="sm"
-          :disabled="updateRunning"
+          :disabled="isUpdateBusy"
           @click="runUpdate"
         >
-          {{ updateRunning ? '执行中…' : 'update.sh' }}
+          {{ isUpdateBusy ? '执行中…' : 'update.sh' }}
         </Button>
       </div>
       <div class="ml-auto flex items-center gap-2">
-        <span v-if="updateStatus" class="text-xs text-muted-foreground">{{ updateStatus }}</span>
+        <div v-if="updateSummary || updateDetail" class="text-right leading-4">
+          <div v-if="updateSummary" class="text-xs text-muted-foreground">
+            {{ updateSummary }}
+          </div>
+          <div v-if="updateDetail" class="text-xs text-muted-foreground max-w-[28rem] truncate">
+            {{ updateDetail }}
+          </div>
+        </div>
         <template v-if="tab === 'backend'">
           <select
             v-model="selectedDate"

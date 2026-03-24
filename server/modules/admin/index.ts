@@ -6,7 +6,7 @@ import { bus } from '../events/bus'
 import { adminEditAuth, adminUpdateAuth, adminViewAuth } from './guard'
 import { getLogDates, logBuffer, logListeners, readLogsByDate } from './logger'
 import { deleteTableRow, insertTableRow, queryTable, tableNames, updateTableRow } from './service'
-import { runUpdateScript } from './updater'
+import { getUpdateStatus, runUpdateScript } from './updater'
 
 const wsHandlers = new Map<ElysiaWS, {
   logFn: (entry: LogEntry) => void
@@ -19,6 +19,7 @@ export default new Elysia({ prefix: '/admin' })
     .use(adminViewAuth)
     .get('/logs', () => logBuffer)
     .get('/log-dates', () => getLogDates())
+    .get('/update', () => getUpdateStatus())
     .get('/logs/:date', ({ params, status }) => {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(params.date))
         return status(400, { message: 'error.badRequest' })
@@ -78,7 +79,12 @@ export default new Elysia({ prefix: '/admin' })
     .use(adminUpdateAuth)
     .post('/update', ({ status }) => {
       const result = runUpdateScript()
-      if (!result.ok)
-        return status(500, { message: 'error.updateScriptMissing' })
-      return { ok: true, scriptPath: result.scriptPath }
+      if (!result.ok) {
+        if (result.reason === 'missing')
+          return status(500, { message: 'error.updateScriptMissing', scriptPath: result.scriptPath })
+        if (result.reason === 'running')
+          return status(409, { message: 'error.updateAlreadyRunning', update: getUpdateStatus() })
+        return status(500, { message: 'error.updateFailed' })
+      }
+      return { ok: true, scriptPath: result.scriptPath, pid: result.pid, update: result.update }
     }))
