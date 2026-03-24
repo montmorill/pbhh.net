@@ -8,7 +8,7 @@ export interface RoomMentionOption {
 export function renderRoomMessageHtml(content: string, rooms: RoomMentionOption[]): string {
   const roomMap = new Map(rooms.map(room => [room.id, room.name]))
   const linked = content
-    .replace(/(^|[\s(])@([\w-]+)/g, (_, prefix: string, username: string) => {
+    .replace(/(^|[\s(])@([\w-]+)@/g, (_, prefix: string, username: string) => {
       return `${prefix}[@${username}](/@${username})`
     })
     .replace(/(^|[\s(])_(\d+)_/g, (_, prefix: string, roomId: string) => {

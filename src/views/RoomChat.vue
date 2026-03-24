@@ -227,7 +227,7 @@ function insertTextAtCursor(insertText: string, start?: number, end?: number) {
 }
 
 function mentionUser(username: string) {
-  insertTextAtCursor(`@${username} `)
+  insertTextAtCursor(`@${username}@ `)
   closeContextMenu()
 }
 
@@ -420,8 +420,8 @@ const composerCompletions = computed<ComposerCompletion[]>(() => {
       .map(member => ({
         key: `user:${member.username}`,
         label: member.nickname || member.username,
-        detail: `@${member.username}`,
-        insertText: `@${member.username} `,
+        detail: `@${member.username}@`,
+        insertText: `@${member.username}@ `,
       }))
   }
 
@@ -433,7 +433,7 @@ const composerCompletions = computed<ComposerCompletion[]>(() => {
       key: `room:${room.id}`,
       label: room.name || `房间 ${room.id}`,
       detail: `_${room.id}_`,
-      insertText: `_${room.id}_ `,
+      insertText: `_${room.id}_`,
     }))
 })
 
@@ -667,8 +667,8 @@ function send() {
 }
 
 function submitPoem() {
-  const content = poemDraft.value.trim()
-  if (!content || !ws || ws.readyState !== WebSocket.OPEN)
+  const content = poemDraft.value
+  if (!content.trim() || !ws || ws.readyState !== WebSocket.OPEN)
     return
   if (gameState.value?.currentPlayer !== user.value?.username)
     return
@@ -1088,7 +1088,7 @@ onUnmounted(() => {
                   </div>
                 </button>
                 <div
-                  class="prose prose-sm max-w-none text-inherit [&_*]:text-inherit prose-p:my-0 prose-pre:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 dark:prose-invert"
+                  class="prose prose-sm max-w-none text-inherit [&_*]:text-inherit [&_p]:whitespace-pre-wrap prose-p:my-0 prose-pre:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 dark:prose-invert"
                   v-html="entry.data.contentHtml"
                 />
               </div>
