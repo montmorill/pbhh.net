@@ -270,7 +270,8 @@ export default new Elysia({ prefix: '/rooms' })
       if (clientMsg.type !== 'message')
         return
 
-      const content = clientMsg.content?.trim()
+      const rawContent = typeof clientMsg.content === 'string' ? clientMsg.content : ''
+      const content = rawContent.trim()
       if (!content)
         return
 
@@ -278,7 +279,7 @@ export default new Elysia({ prefix: '/rooms' })
 
       const game = RoomService.roomGames.get(roomId)
       if (game) {
-        const { saved, userInfo, replyTo } = await RoomService.saveMessage(roomId, client.username, content, clientMsg.replyToId)
+        const { saved, userInfo, replyTo } = await RoomService.saveMessage(roomId, client.username, rawContent, clientMsg.replyToId)
         RoomService.send(roomId, 'message', {
           id: saved.id,
           username: client.username,
@@ -348,7 +349,7 @@ export default new Elysia({ prefix: '/rooms' })
 
       // ── 普通消息 ────────────────────────────────────────────────────────────
 
-      const { saved, userInfo, replyTo } = await RoomService.saveMessage(roomId, client.username, content, clientMsg.replyToId)
+      const { saved, userInfo, replyTo } = await RoomService.saveMessage(roomId, client.username, rawContent, clientMsg.replyToId)
       RoomService.send(roomId, 'message', {
         id: saved.id,
         username: client.username,

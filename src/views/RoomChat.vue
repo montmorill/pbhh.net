@@ -659,8 +659,8 @@ function sendMessage(content: string) {
 }
 
 function send() {
-  const content = draft.value.trim()
-  if (!content)
+  const content = draft.value
+  if (!content.trim())
     return
   sendMessage(content)
   draft.value = ''
