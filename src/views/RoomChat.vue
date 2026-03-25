@@ -694,7 +694,12 @@ function togglePlayer(username: string) {
 
 function formatTime(val: number | string | Date) {
   const d = val instanceof Date ? val : new Date(typeof val === 'number' ? val * 1000 : val)
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const now = new Date()
+  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  if (d.toDateString() === now.toDateString()) return time
+  if (d.getFullYear() === now.getFullYear())
+    return d.toLocaleDateString([], { month: '2-digit', day: '2-digit' }) + ' ' + time
+  return d.toLocaleDateString([], { year: 'numeric', month: '2-digit', day: '2-digit' }) + ' ' + time
 }
 
 function getUserProfileLink(username: string) {
