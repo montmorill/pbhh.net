@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LogEntry } from './admin/AdminLog.vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { user } from '@/lib/api'
 import { hasCapability } from '@/lib/capabilities'
@@ -23,6 +23,7 @@ interface UpdateStatus {
 }
 
 const router = useRouter()
+const route = useRoute()
 const canViewAdmin = computed(() => hasCapability(user.value?.capabilities, 'admin:view'))
 const canRunUpdate = computed(() => hasCapability(user.value?.capabilities, 'admin:update'))
 const canEditDatabase = computed(() => hasCapability(user.value?.capabilities, 'admin:edit'))
@@ -34,11 +35,14 @@ const TABS = {
   database: '数据库',
 }
 
-function getTabFromHash(): Tab {
-  const hash = location.hash.slice(1) as Tab
-  if (location.pathname === '/admin/database')
-    return 'database'
-  return Object.keys(TABS).includes(hash) ? hash : 'backend'
+function isTab(value: unknown): value is Tab {
+  return typeof value === 'string' && Object.keys(TABS).includes(value)
+}
+
+function getTabFromRoute(): Tab {
+  const matched = route.matched[route.matched.length - 1]
+  const adminTab = matched?.meta?.adminTab
+  return isTab(adminTab) ? adminTab : 'backend'
 }
 
 function formatTimestamp(value: number | null) {
@@ -63,7 +67,7 @@ function getExitSummary(state: UpdateStatus) {
   return ''
 }
 
-const tab = ref<Tab>(getTabFromHash())
+const tab = ref<Tab>(getTabFromRoute())
 const LOG_PAGE_SIZE = 500
 const backendLogs = ref<LogEntry[]>([])
 const autoScroll = ref(true)
@@ -118,16 +122,18 @@ const updateDetail = computed(() => {
 
 function setTab(nextTab: Tab) {
   tab.value = nextTab
-  if (nextTab === 'database') {
-    router.replace('/admin/database')
+
+  if (nextTab === 'backend') {
+    router.replace({ name: 'admin-backend' })
     return
   }
-  router.replace('/admin')
-  history.replaceState(history.state, '', `#${nextTab}`)
-}
 
-function handleHashChange() {
-  tab.value = getTabFromHash()
+  if (nextTab === 'studio') {
+    router.replace({ name: 'admin-studio' })
+    return
+  }
+
+  router.replace({ name: 'admin-database' })
 }
 
 function applyUpdateState(payload: unknown) {
@@ -279,13 +285,16 @@ function connectWS() {
   }
 }
 
+watch(() => route.fullPath, () => {
+  tab.value = getTabFromRoute()
+}, { immediate: true })
+
 onMounted(async () => {
   if (!canViewAdmin.value) {
     router.replace('/')
     return
   }
 
-  window.addEventListener('hashchange', handleHashChange)
   connectWS()
   await Promise.allSettled([
     loadLogDates(),
@@ -295,7 +304,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   disposed = true
-  window.removeEventListener('hashchange', handleHashChange)
   ws?.close()
   if (reconnectTimer)
     clearTimeout(reconnectTimer)
@@ -305,69 +313,71 @@ onUnmounted(() => {
 
 <template>
   <div class="w-full h-full min-h-0 flex flex-col overflow-hidden">
-    <div class="border-b px-4 py-3 flex items-center gap-4 shrink-0 sticky top-0 z-10 bg-background">
-      <span class="font-bold">Admin</span>
-      <div class="flex gap-1">
-        <Button
-          v-for="(label, key) in TABS"
-          :key="key"
-          :variant="tab === key ? 'default' : 'outline'"
-          size="sm"
-          :class="tab === key ? 'border border-primary' : ''"
-          @click="setTab(key as Tab)"
-        >
-          {{ label }}
-        </Button>
-        <Button
-          v-if="canRunUpdate"
-          variant="outline"
-          size="sm"
-          :disabled="isUpdateBusy"
-          @click="runUpdate"
-        >
-          {{ isUpdateBusy ? '执行中…' : 'update.sh' }}
-        </Button>
-      </div>
-      <div class="ml-auto flex items-center gap-2">
-        <div v-if="updateSummary || updateDetail" class="text-right leading-4">
-          <div v-if="updateSummary" class="text-xs text-muted-foreground">
-            {{ updateSummary }}
-          </div>
-          <div v-if="updateDetail" class="text-xs text-muted-foreground max-w-md truncate">
-            {{ updateDetail }}
-          </div>
-        </div>
-        <template v-if="tab === 'backend'">
-          <select
-            v-model="selectedDate"
-            class="text-xs border rounded px-2 py-1 bg-background text-foreground"
+    <div class="shrink-0 border-b bg-background sticky top-0 z-20">
+      <div class="px-4 py-3 flex items-center gap-4 overflow-x-auto">
+        <span class="font-bold shrink-0">Admin</span>
+        <div class="flex gap-1 shrink-0">
+          <Button
+            v-for="(label, key) in TABS"
+            :key="key"
+            :variant="tab === key ? 'default' : 'outline'"
+            size="sm"
+            :class="tab === key ? 'border border-primary' : ''"
+            @click="setTab(key as Tab)"
           >
-            <option value="">
-              实时
-            </option>
-            <option v-for="d in logDates" :key="d" :value="d">
-              {{ d }}
-            </option>
-          </select>
-          <template v-if="!selectedDate">
-            <label class="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
-              <input v-model="autoScroll" type="checkbox" class="size-3">
-              自动滚动
-            </label>
-          </template>
-          <template v-if="totalLogPages > 1">
-            <Button variant="ghost" size="sm" :disabled="logPage === 0" @click="logPage--">
-              上一页
-            </Button>
-            <span class="text-xs text-muted-foreground">{{ logPage + 1 }}/{{ totalLogPages }}</span>
-            <Button variant="ghost" size="sm" :disabled="logPage >= totalLogPages - 1" @click="logPage++">
-              下一页
-            </Button>
-          </template>
-          <Button v-if="!selectedDate" variant="outline" size="sm" @click="backendLogs = []">
-            清空
+            {{ label }}
           </Button>
-        </template>
+          <Button
+            v-if="canRunUpdate"
+            variant="outline"
+            size="sm"
+            :disabled="isUpdateBusy"
+            @click="runUpdate"
+          >
+            {{ isUpdateBusy ? '执行中…' : 'update.sh' }}
+          </Button>
+        </div>
+        <div class="ml-auto flex items-center gap-2 shrink-0">
+          <div v-if="updateSummary || updateDetail" class="text-right leading-4">
+            <div v-if="updateSummary" class="text-xs text-muted-foreground">
+              {{ updateSummary }}
+            </div>
+            <div v-if="updateDetail" class="text-xs text-muted-foreground max-w-md truncate">
+              {{ updateDetail }}
+            </div>
+          </div>
+          <template v-if="tab === 'backend'">
+            <select
+              v-model="selectedDate"
+              class="text-xs border rounded px-2 py-1 bg-background text-foreground"
+            >
+              <option value="">
+                实时
+              </option>
+              <option v-for="d in logDates" :key="d" :value="d">
+                {{ d }}
+              </option>
+            </select>
+            <template v-if="!selectedDate">
+              <label class="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                <input v-model="autoScroll" type="checkbox" class="size-3">
+                自动滚动
+              </label>
+            </template>
+            <template v-if="totalLogPages > 1">
+              <Button variant="ghost" size="sm" :disabled="logPage === 0" @click="logPage--">
+                上一页
+              </Button>
+              <span class="text-xs text-muted-foreground">{{ logPage + 1 }}/{{ totalLogPages }}</span>
+              <Button variant="ghost" size="sm" :disabled="logPage >= totalLogPages - 1" @click="logPage++">
+                下一页
+              </Button>
+            </template>
+            <Button v-if="!selectedDate" variant="outline" size="sm" @click="backendLogs = []">
+              清空
+            </Button>
+          </template>
+        </div>
       </div>
     </div>
 

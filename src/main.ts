@@ -21,8 +21,16 @@ const router = createRouter({
     { path: '/login', component: () => import('@/views/Login.vue'), meta: { guestOnly: true } },
     { path: '/signup', component: () => import('@/views/Signup.vue'), meta: { guestOnly: true } },
     { path: '/settings', component: () => import('@/views/Settings.vue'), meta: { authRequired: true } },
-    { path: '/admin', component: () => import('@/views/Admin.vue'), meta: { authRequired: true, capabilityRequired: 'admin:view' } },
-    { path: '/admin/database', component: () => import('@/views/Admin.vue'), meta: { authRequired: true, capabilityRequired: 'admin:view' } },
+    {
+      path: '/admin',
+      component: () => import('@/views/Admin.vue'),
+      meta: { authRequired: true, capabilityRequired: 'admin:view' },
+      children: [
+        { path: '', name: 'admin-backend', meta: { adminTab: 'backend' } },
+        { path: 'studio', name: 'admin-studio', meta: { adminTab: 'studio' } },
+        { path: 'database', name: 'admin-database', meta: { adminTab: 'database' } },
+      ],
+    },
     { path: '/inbox', component: () => import('@/views/Inbox.vue'), meta: { authRequired: true } },
     { path: '/mail/compose', component: () => import('@/views/MailCompose.vue'), meta: { authRequired: true } },
     { path: '/mail/:id', component: () => import('@/views/MailDetail.vue'), props: route => ({ id: Number(route.params.id) }), meta: { authRequired: true } },
@@ -34,7 +42,7 @@ const router = createRouter({
     { path: '/hanting/:key', component: () => import('@/views/Hanting.vue'), props: (route) => {
       const key = String(route.params.key)
       const match = key.match(/^(\d+)([a-z])?$/)
-      return { wordId: Number(match?.[1]), variant: match?.[2] ? match[2].charCodeAt(0) - 97 : 0 }
+      return { wordId: Number(match?.[1]), variant: match?.[2] ? match?.[2].charCodeAt(0) - 97 : 0 }
     } },
     { path: '/@:username', component: () => import('@/views/UserPage.vue') },
     { path: '/:pathMatch(.*)*', component: () => import('@/views/NotFound.vue') },
