@@ -129,7 +129,8 @@ function hasFeedback(type: string) {
 
 function censorText(text: string) {
   const map = word.value?.censorMap
-  if (!map || !text) return text
+  if (!map || !text)
+    return text
   return [...text].map(ch => ch in map ? ` ${map[ch]} ` : ch).join('').replace(/ {2,}/g, ' ').trim()
 }
 
@@ -369,7 +370,7 @@ onMounted(async () => {
           {{ showAnswer ? word.definition : censorText(word.definition) }}
         </p>
         <p v-if="word.example" class="text-sm text-muted-foreground text-start whitespace-pre-wrap">
-          {{ showAnswer ? word.example : censorText(word.example) }}
+          {{ (showAnswer ? word.example : censorText(word.example)).replace("【例句】", "【冷蕨】") }}
         </p>
       </div>
 
