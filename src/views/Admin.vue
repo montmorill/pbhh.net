@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { user } from '@/lib/api'
 import { hasCapability } from '@/lib/capabilities'
+import AdminDatabase from './admin/AdminDatabase.vue'
 import AdminLog from './admin/AdminLog.vue'
 
 interface UpdateStatus {
@@ -24,14 +25,19 @@ interface UpdateStatus {
 const router = useRouter()
 const canViewAdmin = computed(() => hasCapability(user.value?.capabilities, 'admin:view'))
 const canRunUpdate = computed(() => hasCapability(user.value?.capabilities, 'admin:update'))
+const canEditDatabase = computed(() => hasCapability(user.value?.capabilities, 'admin:edit'))
 
 type Tab = keyof typeof TABS
 const TABS = {
   backend: '服务端日志',
+  studio: 'Drizzle Studio',
+  database: '数据库',
 }
 
 function getTabFromHash(): Tab {
   const hash = location.hash.slice(1) as Tab
+  if (location.pathname === '/admin/database')
+    return 'database'
   return Object.keys(TABS).includes(hash) ? hash : 'backend'
 }
 
@@ -112,6 +118,11 @@ const updateDetail = computed(() => {
 
 function setTab(nextTab: Tab) {
   tab.value = nextTab
+  if (nextTab === 'database') {
+    router.replace('/admin/database')
+    return
+  }
+  router.replace('/admin')
   history.replaceState(history.state, '', `#${nextTab}`)
 }
 
@@ -294,7 +305,7 @@ onUnmounted(() => {
 
 <template>
   <div class="w-full h-full min-h-0 flex flex-col overflow-hidden">
-    <div class="border-b px-4 py-3 flex items-center gap-4 shrink-0">
+    <div class="border-b px-4 py-3 flex items-center gap-4 shrink-0 sticky top-0 z-10 bg-background">
       <span class="font-bold">Admin</span>
       <div class="flex gap-1">
         <Button
@@ -366,6 +377,17 @@ onUnmounted(() => {
         :logs="pagedLogs"
         :auto-scroll="autoScroll && !selectedDate"
         :empty-text="historyLoading ? '加载中…' : '等待日志…'"
+      />
+      <iframe
+        v-show="tab === 'studio'"
+        src="/api/admin/studio/"
+        class="flex-1 w-full bg-background"
+        title="Drizzle Studio"
+        referrerpolicy="no-referrer"
+      />
+      <AdminDatabase
+        v-show="tab === 'database'"
+        :can-edit="canEditDatabase"
       />
     </div>
   </div>
