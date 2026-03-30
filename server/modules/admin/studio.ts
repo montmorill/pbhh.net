@@ -8,6 +8,8 @@ export async function proxyStudio(request: Request, path: string) {
   const headers = new Headers(request.headers)
   headers.delete('host')
   headers.delete('authorization')
+  headers.set('origin', STUDIO_ORIGIN)
+  headers.set('referer', `${STUDIO_ORIGIN}/`)
 
   const init: RequestInit = {
     method: request.method,
