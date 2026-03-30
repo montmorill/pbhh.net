@@ -8,6 +8,7 @@ const serverRoot = resolve(import.meta.dir, '../..')
 const studioHome = resolve(repoRoot, 'data/.drizzle-studio')
 const STUDIO_HOST = '127.0.0.1'
 const STUDIO_PORT = 4983
+const BUN_EXECUTABLE = Bun.which('bun') || 'bun'
 
 export interface StudioStatus {
   running: boolean
@@ -69,7 +70,7 @@ function getStudioEnv() {
 
 function startProcess() {
   ensureStudioHome()
-  const child = spawn('bunx', ['drizzle-kit', 'studio', '--host', STUDIO_HOST, '--port', String(STUDIO_PORT)], {
+  const child = spawn(BUN_EXECUTABLE, ['x', 'drizzle-kit', 'studio', '--host', STUDIO_HOST, '--port', String(STUDIO_PORT)], {
     cwd: serverRoot,
     env: getStudioEnv(),
     detached: true,
