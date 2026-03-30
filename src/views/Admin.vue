@@ -325,7 +325,7 @@ onUnmounted(() => {
           <div v-if="updateSummary" class="text-xs text-muted-foreground">
             {{ updateSummary }}
           </div>
-          <div v-if="updateDetail" class="text-xs text-muted-foreground max-w-[28rem] truncate">
+          <div v-if="updateDetail" class="text-xs text-muted-foreground max-w-md truncate">
             {{ updateDetail }}
           </div>
         </div>
@@ -363,7 +363,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div class="flex-1 overflow-hidden">
+    <div class="flex-1 overflow-hidden flex flex-col">
       <AdminLog
         v-show="tab === 'backend'"
         :logs="pagedLogs"
